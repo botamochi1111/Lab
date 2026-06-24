@@ -184,6 +184,11 @@
       <div class="toolbar">
         <label for="levelSelect">Level</label>
         <select id="levelSelect"></select>
+        <label for="modeSelect">Mode</label>
+        <select id="modeSelect">
+          <option value="goal">Reach Goal</option>
+          <option value="all">Visit All</option>
+        </select>
         <button id="btnRandom" class="primary">Random</button>
         <button id="btnUndo" disabled>↩ Undo</button>
         <button id="btnReset">⟲ Reset</button>
@@ -208,6 +213,7 @@
   <script>
     const svg = document.getElementById("canvas");
     const levelSelect = document.getElementById("levelSelect");
+    const modeSelect = document.getElementById("modeSelect");
     const levelNameEl = document.getElementById("levelName");
     const moveCountEl = document.getElementById("moveCount");
     const currentVertexEl = document.getElementById("currentVertex");
@@ -280,23 +286,45 @@
       return getNeighbors(st.pos, st.edges, lv).filter((nb) => isWalkable(st.pos, nb, st.edges));
     }
 
-    function serializeState(lv, st) {
-      return `${st.pos}|${lv.edges.map(([u, v]) => st.edges.get(edgeKey(u, v))).join("")}`;
-    }
+    let gameMode = "goal";
 
-    function bfsSolveFrom(lv, st) {
-      const queue = [{ pos: st.pos, edges: new Map(st.edges), path: [] }];
-      const seen = new Set([serializeState(lv, { pos: st.pos, edges: st.edges })]);
+    function bfsSolveFrom(lv, st, mode = "goal") {
+      const totalVertices = Object.keys(lv.vertices).length;
+      const initialVisited = st.visited || new Set([st.pos]);
+
+      const queue = [{ 
+        pos: st.pos, 
+        edges: new Map(st.edges), 
+        visited: new Set(initialVisited), 
+        path: [] 
+      }];
+
+      const serializeBfsState = (pos, edges, visitedSet) => {
+        const visitedStr = [...visitedSet].sort().join(",");
+        const edgesStr = lv.edges.map(([u, v]) => edges.get(edgeKey(u, v))).join("");
+        return `${pos}|${edgesStr}|${visitedStr}`;
+      };
+
+      const seen = new Set([serializeBfsState(st.pos, st.edges, queue[0].visited)]);
 
       while (queue.length) {
         const cur = queue.shift();
-        if (cur.pos === lv.goal) return cur.path;
+
+        if (mode === "goal") {
+          if (cur.pos === lv.goal) return cur.path;
+        } else {
+          if (cur.visited.size === totalVertices) return cur.path;
+        }
 
         for (const nb of legalMoves(lv, cur)) {
           const edges = new Map(cur.edges);
-          const next = { pos: nb, edges, path: [...cur.path, nb] };
+          const visited = new Set(cur.visited);
+          visited.add(nb);
+
+          const next = { pos: nb, edges, visited, path: [...cur.path, nb] };
           flipIncident(nb, next.edges, lv);
-          const key = serializeState(lv, next);
+
+          const key = serializeBfsState(next.pos, next.edges, next.visited);
           if (!seen.has(key)) {
             seen.add(key);
             queue.push(next);
@@ -601,7 +629,7 @@
         const solution = bfsSolveFrom(candidate, {
           pos: candidate.start,
           edges: cloneEdges(candidate.edges),
-        });
+        }, gameMode);
         const score = scorePuzzle(candidate, solution);
         if (score > bestScore) {
           bestScore = score;
@@ -647,6 +675,7 @@
         edges: cloneEdges(lv.edges),
         moves: 0,
         won: false,
+        visited: new Set([lv.start]),
       };
       history = [];
       btnUndo.disabled = true;
@@ -685,6 +714,7 @@
         edges: new Map(state.edges),
         moves: state.moves,
         won: state.won,
+        visited: new Set(state.visited),
       });
       btnUndo.disabled = false;
     }
@@ -696,9 +726,17 @@
 
       pushHistory();
       state.pos = target;
+      state.visited.add(target);
       flipIncident(target, state.edges, level);
       state.moves += 1;
-      state.won = state.pos === level.goal;
+
+      if (gameMode === "goal") {
+        state.won = state.pos === level.goal;
+      } else {
+        const totalVertices = Object.keys(level.vertices).length;
+        state.won = state.visited.size === totalVertices;
+      }
+
       updateUI();
       render(target);
     }
@@ -706,7 +744,11 @@
     function undo() {
       if (!history.length) return;
       const prev = history.pop();
-      state = { ...prev, edges: prev.edges };
+      state = { 
+        ...prev, 
+        edges: prev.edges,
+        visited: new Set(prev.visited),
+      };
       btnUndo.disabled = history.length === 0;
       updateUI();
       render();
@@ -721,7 +763,12 @@
         statusBar.classList.add("status-win");
         goalStatusEl.innerHTML = "<span>Result</span> <strong>Clear!</strong>";
       } else {
-        goalStatusEl.innerHTML = "<span>Goal</span> <strong>t</strong>";
+        if (gameMode === "goal") {
+          goalStatusEl.innerHTML = "<span>Goal</span> <strong>t</strong>";
+        } else {
+          const totalVertices = Object.keys(level.vertices).length;
+          goalStatusEl.innerHTML = `<span>Visited</span> <strong>${state.visited.size}/${totalVertices}</strong>`;
+        }
         if (!legalMoves(level, state).length) statusBar.classList.add("status-stuck");
       }
     }
@@ -788,6 +835,15 @@
         if (isCurrent) outer.setAttribute("filter", "url(#glow)");
         g.appendChild(outer);
 
+        if (state.visited.has(id) && id !== state.pos) {
+          const visitedDot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          visitedDot.setAttribute("cx", v.x + 16);
+          visitedDot.setAttribute("cy", v.y - 16);
+          visitedDot.setAttribute("r", 5);
+          visitedDot.setAttribute("fill", "#3dd68c");
+          g.appendChild(visitedDot);
+        }
+
         if (isCurrent) {
           const player = document.createElementNS("http://www.w3.org/2000/svg", "circle");
           player.setAttribute("cx", v.x);
@@ -820,6 +876,10 @@
     levelSelect.addEventListener("change", () => {
       if (levelSelect.value === "random") loadNewPuzzle();
       else loadPreset(Number(levelSelect.value));
+    });
+    modeSelect.addEventListener("change", () => {
+      gameMode = modeSelect.value;
+      resetCurrent();
     });
 
     loadPreset(0);
