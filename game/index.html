@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Incident Flip Walk</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --panel: #1a2332;
+      --panel-border: #2d3a4f;
+      --text: #e8edf4;
+      --muted: #8b9cb3;
+      --walkable: #3dd68c;
+      --blocked: #4a5568;
+      --start: #ffd166;
+      --goal: #ff6b6b;
+      --accent: #a78bfa;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", sans-serif;
+      background: radial-gradient(ellipse at 50% 0%, #1a2744 0%, var(--bg) 60%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .wrap {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 2rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 1.25rem;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 0.35rem;
+    }
+
+    .board {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--panel-border);
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    button {
+      font: inherit;
+      border-radius: 8px;
+      border: 1px solid var(--panel-border);
+      background: #243044;
+      color: var(--text);
+      padding: 0.45rem 0.9rem;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    button:hover:not(:disabled) { background: #2f3f58; }
+    button:active:not(:disabled) { transform: scale(0.97); }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    button.primary {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border-color: transparent;
+      font-weight: 600;
+    }
+
+    select {
+      font: inherit;
+      border-radius: 8px;
+      border: 1px solid var(--panel-border);
+      background: #243044;
+      color: var(--text);
+      padding: 0.45rem 0.75rem;
+      cursor: pointer;
+      max-width: 11rem;
+    }
+
+    .toolbar label {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .status {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.25rem;
+      padding: 0.65rem 1rem;
+      font-size: 0.88rem;
+      border-bottom: 1px solid var(--panel-border);
+    }
+
+    .status span { color: var(--muted); }
+    .status strong { color: var(--text); }
+    .status-win strong { color: var(--walkable); }
+    .status-stuck strong { color: var(--goal); }
+
+    #canvas {
+      width: 100%;
+      height: min(68vh, 560px);
+      display: block;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(91, 141, 239, 0.05) 0%, transparent 70%),
+        #121a26;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.25rem;
+      padding: 0.75rem 1rem 1rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .legend-item { display: flex; align-items: center; gap: 0.45rem; }
+
+    .legend-line {
+      width: 28px;
+      border-top: 3px solid var(--walkable);
+    }
+
+    .legend-line.dashed {
+      border-top-style: dashed;
+      border-color: var(--blocked);
+    }
+
+    .vertex-label { pointer-events: none; user-select: none; }
+    .edge { transition: stroke 0.35s ease, stroke-dasharray 0.35s ease; }
+    .vertex-click { cursor: pointer; }
+    .vertex-click:hover circle { filter: brightness(1.12); }
+    .vertex-click.disabled { cursor: default; }
+    .flip-ring {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 2;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .flip-ring.animate {
+      animation: pulse-ring 0.55s ease-out forwards;
+    }
+    @keyframes pulse-ring {
+      0% { r: 18; opacity: 0.85; stroke-width: 3; }
+      100% { r: 42; opacity: 0; stroke-width: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Incident Flip Walk</h1>
+      <p>Every time you land on a vertex, all incident edges flip between walkable and blocked. Move from s to t.</p>
+    </header>
+
+    <div class="board">
+      <div class="toolbar">
+        <label for="levelSelect">Level</label>
+        <select id="levelSelect"></select>
+        <button id="btnRandom" class="primary">Random</button>
+        <button id="btnUndo" disabled>↩ Undo</button>
+        <button id="btnReset">⟲ Reset</button>
+      </div>
+      <div class="status" id="statusBar">
+        <div><span>Level</span> <strong id="levelName">—</strong></div>
+        <div><span>Moves</span> <strong id="moveCount">0</strong></div>
+        <div><span>Current</span> <strong id="currentVertex">s</strong></div>
+        <div id="goalStatus"><span>Goal</span> <strong>t</strong></div>
+      </div>
+      <svg id="canvas" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-line"></div> Walkable</div>
+        <div class="legend-item"><div class="legend-line dashed"></div> Blocked</div>
+        <div class="legend-item"><span style="width:12px;height:12px;border-radius:50%;background:var(--start);display:inline-block"></span> s</div>
+        <div class="legend-item"><span style="width:12px;height:12px;border-radius:50%;background:var(--goal);display:inline-block"></span> t</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="presets.js"></script>
+  <script>
+    const svg = document.getElementById("canvas");
+    const levelSelect = document.getElementById("levelSelect");
+    const levelNameEl = document.getElementById("levelName");
+    const moveCountEl = document.getElementById("moveCount");
+    const currentVertexEl = document.getElementById("currentVertex");
+    const goalStatusEl = document.getElementById("goalStatus");
+    const statusBar = document.getElementById("statusBar");
+    const btnUndo = document.getElementById("btnUndo");
+    const btnReset = document.getElementById("btnReset");
+    const btnRandom = document.getElementById("btnRandom");
+
+    let level = null;
+    let presetIndex = 0;
+    let isRandom = false;
+    let state = null;
+    let history = [];
+
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function edgeKey(a, b) {
+      return a < b ? `${a}|${b}` : `${b}|${a}`;
+    }
+
+    function serializePuzzleStructure(lv) {
+      const edgeStrings = lv.edges.map(([u, v, w]) => {
+        const key = u < v ? `${u}-${v}` : `${v}-${u}`;
+        return `${key}:${w}`;
+      }).sort();
+      return edgeStrings.join(",");
+    }
+
+    const recentPuzzles = [];
+
+    function cloneEdges(edges) {
+      const m = new Map();
+      for (const [u, v, w] of edges) m.set(edgeKey(u, v), w);
+      return m;
+    }
+
+    function getNeighbors(vertex, edgeMap, lv) {
+      const nbs = [];
+      for (const [u, v] of lv.edges) {
+        if (u === vertex) nbs.push(v);
+        else if (v === vertex) nbs.push(u);
+      }
+      return nbs;
+    }
+
+    function isWalkable(u, v, edgeMap) {
+      return edgeMap.get(edgeKey(u, v)) === 1;
+    }
+
+    function flipIncident(vertex, edgeMap, lv) {
+      for (const nb of getNeighbors(vertex, edgeMap, lv)) {
+        const k = edgeKey(vertex, nb);
+        edgeMap.set(k, edgeMap.get(k) === 1 ? 0 : 1);
+      }
+    }
+
+    function legalMoves(lv, st) {
+      return getNeighbors(st.pos, st.edges, lv).filter((nb) => isWalkable(st.pos, nb, st.edges));
+    }
+
+    function serializeState(lv, st) {
+      return `${st.pos}|${lv.edges.map(([u, v]) => st.edges.get(edgeKey(u, v))).join("")}`;
+    }
+
+    function bfsSolveFrom(lv, st) {
+      const queue = [{ pos: st.pos, edges: new Map(st.edges), path: [] }];
+      const seen = new Set([serializeState(lv, { pos: st.pos, edges: st.edges })]);
+
+      while (queue.length) {
+        const cur = queue.shift();
+        if (cur.pos === lv.goal) return cur.path;
+
+        for (const nb of legalMoves(lv, cur)) {
+          const edges = new Map(cur.edges);
+          const next = { pos: nb, edges, path: [...cur.path, nb] };
+          flipIncident(nb, next.edges, lv);
+          const key = serializeState(lv, next);
+          if (!seen.has(key)) {
+            seen.add(key);
+            queue.push(next);
+          }
+        }
+      }
+      return null;
+    }
+
+    function buildLayeredGraph() {
+      const layerCount = randInt(4, 7);
+      const groups = Array.from({ length: layerCount }, () => []);
+      groups[0] = ["s"];
+      groups[layerCount - 1] = ["t"];
+
+      let vid = 1;
+      for (let L = 1; L < layerCount - 1; L++) {
+        const size = randInt(1, 4);
+        for (let i = 0; i < size; i++) groups[L].push(`v${vid++}`);
+      }
+
+      const ids = groups.flat();
+      const layerOf = new Map();
+      groups.forEach((g, L) => g.forEach((id) => layerOf.set(id, L)));
+
+      const adj = new Map(ids.map((id) => [id, new Set()]));
+      const addEdge = (u, v) => {
+        if (u === v) return;
+        adj.get(u).add(v);
+        adj.get(v).add(u);
+      };
+
+      for (let L = 0; L < layerCount - 1; L++) {
+        for (const u of groups[L]) {
+          const targets = groups[L + 1];
+          const picks = shuffle(targets).slice(0, randInt(1, Math.min(2, targets.length)));
+          for (const v of picks) addEdge(u, v);
+        }
+        for (const v of groups[L + 1]) {
+          if ([...adj.get(v)].some((u) => layerOf.get(u) === L)) continue;
+          addEdge(v, groups[L][randInt(0, groups[L].length - 1)]);
+        }
+      }
+
+      const edgePairs = [];
+      const seen = new Set();
+      for (const u of ids) {
+        for (const v of adj.get(u)) {
+          const k = edgeKey(u, v);
+          if (!seen.has(k)) {
+            seen.add(k);
+            edgePairs.push([u, v]);
+          }
+        }
+      }
+
+      const extra = randInt(2, 5);
+      for (let i = 0; i < extra; i++) {
+        const u = ids[randInt(0, ids.length - 1)];
+        const lu = layerOf.get(u);
+        const candidates = ids.filter((v) => {
+          if (v === u) return false;
+          const lv = layerOf.get(v);
+          return Math.abs(lu - lv) <= 2 && !adj.get(u).has(v);
+        });
+        if (candidates.length) addEdge(u, candidates[randInt(0, candidates.length - 1)]);
+      }
+
+      edgePairs.length = 0;
+      seen.clear();
+      for (const u of ids) {
+        for (const v of adj.get(u)) {
+          const k = edgeKey(u, v);
+          if (!seen.has(k)) {
+            seen.add(k);
+            edgePairs.push([u, v]);
+          }
+        }
+      }
+
+      return { ids, adj, edgePairs, groups, layerOf };
+    }
+
+    function layoutLayered(groups) {
+      const vertices = {};
+      const marginX = 80;
+      const marginY = 60;
+      const width = 800 - marginX * 2;
+      const height = 500 - marginY * 2;
+      const layerCount = groups.length;
+
+      groups.forEach((g, L) => {
+        const baseX = marginX + (layerCount === 1 ? width / 2 : (L / (layerCount - 1)) * width);
+        const xJitterRange = (L === 0 || L === layerCount - 1) ? 0 : 35;
+        const spacing = g.length > 1 ? height / (g.length + 1) : height / 2;
+
+        g.forEach((id, i) => {
+          const baseY = marginY + spacing * (i + 1);
+          const yJitterRange = (id === "s" || id === "t") ? 20 : 40;
+
+          const x = baseX + (Math.random() - 0.5) * xJitterRange * 2;
+          const y = baseY + (Math.random() - 0.5) * yJitterRange * 2;
+
+          const role = id === "s" ? "start" : id === "t" ? "goal" : null;
+          vertices[id] = {
+            x: Math.round(x),
+            y: Math.round(y),
+            label: id === "s" || id === "t" ? id : String(i + 1),
+            role,
+          };
+        });
+      });
+
+      // Iterative repulsion to prevent overlaps
+      const minDistance = 68;
+      const keys = Object.keys(vertices);
+      for (let iter = 0; iter < 50; iter++) {
+        let moved = false;
+        for (let i = 0; i < keys.length; i++) {
+          for (let j = i + 1; j < keys.length; j++) {
+            const u = vertices[keys[i]];
+            const v = vertices[keys[j]];
+            const dx = v.x - u.x;
+            const dy = v.y - u.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < minDistance) {
+              moved = true;
+              const overlap = minDistance - dist;
+              const nx = dist > 0.1 ? dx / dist : Math.random() - 0.5;
+              const ny = dist > 0.1 ? dy / dist : Math.random() - 0.5;
+              const pushX = nx * (overlap / 2);
+              const pushY = ny * (overlap / 2);
+
+              if (keys[i] !== "s" && keys[i] !== "t") {
+                u.x -= pushX;
+                u.y -= pushY;
+              } else {
+                v.x += pushX * 2;
+                v.y += pushY * 2;
+                continue;
+              }
+              if (keys[j] !== "s" && keys[j] !== "t") {
+                v.x += pushX;
+                v.y += pushY;
+              } else {
+                u.x -= pushX * 2;
+                u.y -= pushY * 2;
+              }
+            }
+          }
+        }
+        if (!moved) break;
+      }
+
+      // Keep within boundaries
+      keys.forEach((key) => {
+        const v = vertices[key];
+        v.x = Math.max(40, Math.min(760, Math.round(v.x)));
+        v.y = Math.max(40, Math.min(460, Math.round(v.y)));
+      });
+
+      return vertices;
+    }
+
+    function bfsPath(adj, start, goal) {
+      const queue = [[start]];
+      const seen = new Set([start]);
+      while (queue.length) {
+        const path = queue.shift();
+        const cur = path[path.length - 1];
+        if (cur === goal) return path;
+        for (const nb of shuffle([...adj.get(cur)])) {
+          if (!seen.has(nb)) {
+            seen.add(nb);
+            queue.push([...path, nb]);
+          }
+        }
+      }
+      return null;
+    }
+
+    function craftSolutionPath(adj) {
+      const minLen = randInt(5, 9);
+      const path = ["s"];
+      let cur = "s";
+      const visitCount = new Map([["s", 1]]);
+
+      for (let step = 0; step < 24 && path.length < minLen + 3; step++) {
+        if (cur === "t" && path.length >= minLen) break;
+        const nbs = shuffle([...adj.get(cur)]);
+        if (!nbs.length) break;
+
+        let next = null;
+        if (path.length < minLen - 1) {
+          const toward = nbs.filter((nb) => nb !== "t" || path.length >= minLen - 2);
+          const revisit = toward.filter((nb) => (visitCount.get(nb) || 0) > 0);
+          if (revisit.length && Math.random() < 0.55) {
+            next = revisit[randInt(0, revisit.length - 1)];
+          } else if (toward.length) {
+            next = toward[randInt(0, toward.length - 1)];
+          }
+        } else if (cur !== "t") {
+          const route = bfsPath(adj, cur, "t");
+          if (route && route.length > 1) next = route[1];
+        }
+
+        if (!next) next = nbs[randInt(0, nbs.length - 1)];
+        path.push(next);
+        visitCount.set(next, (visitCount.get(next) || 0) + 1);
+        cur = next;
+      }
+
+      if (cur !== "t") {
+        const tail = bfsPath(adj, cur, "t");
+        if (!tail) return null;
+        path.push(...tail.slice(1));
+      }
+
+      if (path[path.length - 1] !== "t" || path.length < 4) return null;
+      const hasRevisit = new Set(path).size < path.length;
+      if (!hasRevisit && path.length < 5) return null;
+      return path;
+    }
+
+    function buildInitialEdgesFromPath(path, edgePairs) {
+      const keys = edgePairs.map(([u, v]) => edgeKey(u, v));
+      const flipAt = (sigma, vertex) => {
+        const next = new Map(sigma);
+        for (const [u, v] of edgePairs) {
+          if (u === vertex || v === vertex) {
+            const k = edgeKey(u, v);
+            next.set(k, next.get(k) === 1 ? 0 : 1);
+          }
+        }
+        return next;
+      };
+
+      for (let attempt = 0; attempt < 120; attempt++) {
+        const threshold = Math.random() * 0.5 + 0.25;
+        let sigma = new Map(keys.map((k) => [k, Math.random() < threshold ? 1 : 0]));
+        let ok = true;
+        for (let i = path.length - 1; i >= 1; i--) {
+          sigma = flipAt(sigma, path[i]);
+          if (sigma.get(edgeKey(path[i - 1], path[i])) !== 1) {
+            ok = false;
+            break;
+          }
+        }
+        if (ok) return edgePairs.map(([u, v]) => [u, v, sigma.get(edgeKey(u, v))]);
+      }
+      return null;
+    }
+
+    function scorePuzzle(lv, solution) {
+      if (!solution) return -1;
+      const len = solution.length;
+      if (len < 4 || len > 16) return -1;
+
+      const walkable = lv.edges.filter(([, , w]) => w === 1).length;
+      const ratio = walkable / lv.edges.length;
+      if (ratio < 0.28 || ratio > 0.72) return -1;
+
+      const unique = new Set(solution).size;
+      const revisitBonus = unique < solution.length ? 18 : 0;
+      const lenScore = 20 - Math.abs(len - 7) * 3;
+      const edgeScore = lv.edges.length >= 7 && lv.edges.length <= 22 ? 8 : 0;
+      const startMoves = legalMoves(lv, {
+        pos: lv.start,
+        edges: cloneEdges(lv.edges),
+      }).length;
+      if (startMoves === 0) return -1;
+      const branchScore = startMoves === 1 ? 4 : startMoves === 2 ? 8 : 3;
+
+      return lenScore + revisitBonus + edgeScore + branchScore;
+    }
+
+    function generatePuzzle() {
+      let best = null;
+      let bestScore = -1;
+
+      for (let attempt = 0; attempt < 150; attempt++) {
+        const graph = buildLayeredGraph();
+        const path = craftSolutionPath(graph.adj);
+        if (!path) continue;
+
+        const edges = buildInitialEdgesFromPath(path, graph.edgePairs);
+        if (!edges) continue;
+
+        const candidate = {
+          name: "Random",
+          vertices: layoutLayered(graph.groups),
+          edges,
+          start: "s",
+          goal: "t",
+        };
+
+        const sig = serializePuzzleStructure(candidate);
+        if (recentPuzzles.includes(sig)) {
+          continue;
+        }
+
+        const solution = bfsSolveFrom(candidate, {
+          pos: candidate.start,
+          edges: cloneEdges(candidate.edges),
+        });
+        const score = scorePuzzle(candidate, solution);
+        if (score > bestScore) {
+          bestScore = score;
+          best = candidate;
+          best._optimal = solution.length;
+          best._sig = sig;
+        }
+        if (bestScore >= 28 && best._sig) break;
+      }
+
+      if (!best) {
+        const randomPreset = PRESETS[randInt(0, PRESETS.length - 1)];
+        best = JSON.parse(JSON.stringify(randomPreset));
+        best.name = "Random";
+        best._sig = serializePuzzleStructure(best);
+      }
+
+      if (best._sig) {
+        recentPuzzles.push(best._sig);
+        if (recentPuzzles.length > 10) {
+          recentPuzzles.shift();
+        }
+      }
+
+      return best;
+    }
+
+    PRESETS.forEach((lv, i) => {
+      const opt = document.createElement("option");
+      opt.value = String(i);
+      opt.textContent = `Level ${i + 1}`;
+      levelSelect.appendChild(opt);
+    });
+    const randomOpt = document.createElement("option");
+    randomOpt.value = "random";
+    randomOpt.textContent = "Random";
+    levelSelect.appendChild(randomOpt);
+
+    function startLevel(lv) {
+      level = lv;
+      state = {
+        pos: lv.start,
+        edges: cloneEdges(lv.edges),
+        moves: 0,
+        won: false,
+      };
+      history = [];
+      btnUndo.disabled = true;
+      levelNameEl.textContent = isRandom ? "Random" : `Level ${presetIndex + 1}`;
+      updateUI();
+      render();
+    }
+
+    function loadPreset(idx) {
+      isRandom = false;
+      presetIndex = idx;
+      levelSelect.value = String(idx);
+      startLevel(PRESETS[idx]);
+    }
+
+    function loadNewPuzzle() {
+      btnRandom.disabled = true;
+      btnRandom.textContent = "Generating...";
+      setTimeout(() => {
+        isRandom = true;
+        levelSelect.value = "random";
+        startLevel(generatePuzzle());
+        btnRandom.disabled = false;
+        btnRandom.textContent = "Random";
+      }, 20);
+    }
+
+    function resetCurrent() {
+      if (isRandom) startLevel(level);
+      else startLevel(PRESETS[presetIndex]);
+    }
+
+    function pushHistory() {
+      history.push({
+        pos: state.pos,
+        edges: new Map(state.edges),
+        moves: state.moves,
+        won: state.won,
+      });
+      btnUndo.disabled = false;
+    }
+
+    function tryMove(target) {
+      if (state.won) return;
+      const legal = legalMoves(level, state);
+      if (!legal.includes(target)) return;
+
+      pushHistory();
+      state.pos = target;
+      flipIncident(target, state.edges, level);
+      state.moves += 1;
+      state.won = state.pos === level.goal;
+      updateUI();
+      render(target);
+    }
+
+    function undo() {
+      if (!history.length) return;
+      const prev = history.pop();
+      state = { ...prev, edges: prev.edges };
+      btnUndo.disabled = history.length === 0;
+      updateUI();
+      render();
+    }
+
+    function updateUI() {
+      moveCountEl.textContent = state.moves;
+      currentVertexEl.textContent = state.pos;
+      statusBar.classList.remove("status-win", "status-stuck");
+
+      if (state.won) {
+        statusBar.classList.add("status-win");
+        goalStatusEl.innerHTML = "<span>Result</span> <strong>Clear!</strong>";
+      } else {
+        goalStatusEl.innerHTML = "<span>Goal</span> <strong>t</strong>";
+        if (!legalMoves(level, state).length) statusBar.classList.add("status-stuck");
+      }
+    }
+
+    function render(flipVertex = null) {
+      const legal = state.won ? [] : legalMoves(level, state);
+      svg.innerHTML = "";
+
+      const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+      defs.innerHTML = `
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      `;
+      svg.appendChild(defs);
+
+      const gEdges = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      for (const [u, v] of level.edges.map(([a, b]) => [a, b])) {
+        const p1 = level.vertices[u];
+        const p2 = level.vertices[v];
+        const walkable = isWalkable(u, v, state.edges);
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", p1.x);
+        line.setAttribute("y1", p1.y);
+        line.setAttribute("x2", p2.x);
+        line.setAttribute("y2", p2.y);
+        line.setAttribute("class", "edge");
+        line.setAttribute("stroke", walkable ? "#3dd68c" : "#4a5568");
+        line.setAttribute("stroke-width", walkable ? 5 : 3);
+        line.setAttribute("stroke-linecap", "round");
+        if (!walkable) line.setAttribute("stroke-dasharray", "10 8");
+        line.setAttribute("opacity", walkable ? 1 : 0.72);
+        gEdges.appendChild(line);
+      }
+      svg.appendChild(gEdges);
+
+      const gVertices = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      for (const [id, v] of Object.entries(level.vertices)) {
+        const isCurrent = id === state.pos;
+        const isLegal = legal.includes(id);
+
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        g.setAttribute("class", `vertex-click ${isLegal ? "" : "disabled"}`);
+
+        if (flipVertex === id) {
+          const ring = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          ring.setAttribute("cx", v.x);
+          ring.setAttribute("cy", v.y);
+          ring.setAttribute("class", "flip-ring animate");
+          g.appendChild(ring);
+        }
+
+        const outer = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        outer.setAttribute("cx", v.x);
+        outer.setAttribute("cy", v.y);
+        outer.setAttribute("r", isCurrent ? 28 : 24);
+        let fill = "#5b8def";
+        if (v.role === "start") fill = "#ffd166";
+        else if (v.role === "goal") fill = "#ff6b6b";
+        outer.setAttribute("fill", fill);
+        outer.setAttribute("stroke", isLegal ? "#3dd68c" : isCurrent ? "#fff" : "#2d3a4f");
+        outer.setAttribute("stroke-width", isCurrent ? 4 : isLegal ? 3 : 2);
+        if (isCurrent) outer.setAttribute("filter", "url(#glow)");
+        g.appendChild(outer);
+
+        if (isCurrent) {
+          const player = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          player.setAttribute("cx", v.x);
+          player.setAttribute("cy", v.y);
+          player.setAttribute("r", 9);
+          player.setAttribute("fill", "#fff");
+          g.appendChild(player);
+        }
+
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("x", v.x);
+        text.setAttribute("y", v.y + 46);
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("class", "vertex-label");
+        text.setAttribute("fill", "#8b9cb3");
+        text.setAttribute("font-size", "13");
+        text.setAttribute("font-weight", "600");
+        text.textContent = v.label || id;
+        g.appendChild(text);
+
+        if (isLegal) g.addEventListener("click", () => tryMove(id));
+        gVertices.appendChild(g);
+      }
+      svg.appendChild(gVertices);
+    }
+
+    btnRandom.addEventListener("click", loadNewPuzzle);
+    btnUndo.addEventListener("click", undo);
+    btnReset.addEventListener("click", resetCurrent);
+    levelSelect.addEventListener("change", () => {
+      if (levelSelect.value === "random") loadNewPuzzle();
+      else loadPreset(Number(levelSelect.value));
+    });
+
+    loadPreset(0);
+  </script>
+</body>
+</html>
