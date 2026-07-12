@@ -1,340 +1,427 @@
-function edgeKey(a, b) { return a < b ? `${a}|${b}` : `${b}|${a}`; }
-function cloneEdges(edges) {
-  const m = new Map();
-  for (const [u, v, w] of edges) m.set(edgeKey(u, v), w);
-  return m;
+const fs = require("fs");
+const path = require("path");
+
+function edgeKey(a, b) {
+  return a < b ? `${a}|${b}` : `${b}|${a}`;
 }
-function getNeighbors(v, em, lv) {
-  const n = [];
-  for (const [u, w] of lv.edges) {
-    if (u === v) n.push(w);
-    else if (w === v) n.push(u);
-  }
-  return n;
-}
-function isWalkable(u, v, em) { return em.get(edgeKey(u, v)) === 1; }
-function flipIncident(v, em, lv) {
-  for (const nb of getNeighbors(v, em, lv)) em.set(edgeKey(v, nb), em.get(edgeKey(v, nb)) ^ 1);
-}
-function legal(lv, st) {
-  return getNeighbors(st.pos, st.edges, lv).filter((nb) => isWalkable(st.pos, nb, st.edges));
-}
-function ser(lv, st) {
-  return `${st.pos}|${lv.edges.map(([u, v]) => st.edges.get(edgeKey(u, v))).join("")}`;
-}
-function bfs(lv) {
-  const q = [{ pos: lv.start, edges: cloneEdges(lv.edges), path: [] }];
-  const seen = new Set([ser(lv, q[0])]);
-  while (q.length) {
-    const c = q.shift();
-    if (c.pos === lv.goal) return c.path;
-    for (const nb of legal(lv, c)) {
-      const em = new Map(c.edges);
-      const n = { pos: nb, edges: em, path: [...c.path, nb] };
-      flipIncident(nb, em, lv);
-      const k = ser(lv, n);
-      if (!seen.has(k)) { seen.add(k); q.push(n); }
+
+function generatePlanarLayeredGraph(layerSizes, density = 0.5, hasGoal = true, intraProb = 0.3) {
+  const layerCount = layerSizes.length;
+  const groups = Array.from({ length: layerCount }, () => []);
+
+  groups[0] = ["s"];
+  let vid = 1;
+  for (let i = 1; i < layerCount - 1; i++) {
+    for (let j = 0; j < layerSizes[i]; j++) {
+      groups[i].push(`v${vid++}`);
     }
   }
-  return null;
-}
-function buildFromPath(path, pairs) {
-  const flipAt = (sigma, v) => {
-    const n = new Map(sigma);
-    for (const [u, w] of pairs) {
-      if (u === v || w === v) n.set(edgeKey(u, w), n.get(edgeKey(u, w)) ^ 1);
+  if (hasGoal) {
+    groups[layerCount - 1] = ["t"];
+  } else {
+    for (let j = 0; j < layerSizes[layerCount - 1]; j++) {
+      groups[layerCount - 1].push(`v${vid++}`);
     }
-    return n;
+  }
+
+  const ids = groups.flat();
+  const layerOf = new Map();
+  groups.forEach((g, L) => g.forEach((id) => layerOf.set(id, L)));
+
+  const edgePairs = [];
+  const seen = new Set();
+  const addEdge = (u, v) => {
+    const k = edgeKey(u, v);
+    if (!seen.has(k)) {
+      seen.add(k);
+      edgePairs.push([u, v]);
+    }
   };
-  for (let t = 0; t < 500; t++) {
-    let sigma = new Map(pairs.map(([u, v]) => [edgeKey(u, v), Math.random() < 0.5 ? 1 : 0]));
-    let ok = true;
-    for (let i = path.length - 1; i >= 1; i--) {
-      sigma = flipAt(sigma, path[i]);
-      if (sigma.get(edgeKey(path[i - 1], path[i])) !== 1) { ok = false; break; }
+
+  // Connect adjacent layers monotonically to prevent crossings
+  for (let i = 0; i < layerCount - 1; i++) {
+    const L1 = groups[i];
+    const L2 = groups[i + 1];
+    const m = L1.length;
+    const n = L2.length;
+
+    let a = 0, b = 0;
+    addEdge(L1[a], L2[b]);
+    while (a < m - 1 || b < n - 1) {
+      if (a === m - 1) {
+        b++;
+      } else if (b === n - 1) {
+        a++;
+      } else {
+        if (Math.random() < 0.5) {
+          a++;
+        } else {
+          b++;
+        }
+      }
+      addEdge(L1[a], L2[b]);
     }
-    if (ok) return pairs.map(([u, v]) => [u, v, sigma.get(edgeKey(u, v))]);
+
+    // Add extra non-crossing edges
+    const currentEdges = edgePairs.filter(([u, v]) => {
+      const lu = layerOf.get(u);
+      const lv = layerOf.get(v);
+      return (lu === i && lv === i + 1) || (lu === i + 1 && lv === i);
+    }).map(([u, v]) => {
+      const isUL1 = L1.includes(u);
+      const uVal = isUL1 ? u : v;
+      const vVal = isUL1 ? v : u;
+      return [L1.indexOf(uVal), L2.indexOf(vVal)];
+    });
+
+    for (let x = 0; x < m; x++) {
+      for (let y = 0; y < n; y++) {
+        if (Math.random() < density) {
+          const crosses = currentEdges.some(([cx, cy]) => {
+            return (x - cx) * (y - cy) < 0;
+          });
+          if (!crosses) {
+            addEdge(L1[x], L2[y]);
+            currentEdges.push([x, y]);
+          }
+        }
+      }
+    }
   }
-  return null;
+
+  // Add adjacent intra-layer vertical edges
+  for (let i = 0; i < layerCount; i++) {
+    const L = groups[i];
+    for (let j = 0; j < L.length - 1; j++) {
+      if (Math.random() < intraProb) {
+        addEdge(L[j], L[j + 1]);
+      }
+    }
+  }
+
+  return { ids, edgePairs, groups, layerOf };
 }
+
 function layoutLayered(groups) {
   const vertices = {};
-  const mx = 55, my = 45, w = 800 - mx * 2, h = 500 - my * 2, L = groups.length;
-  groups.forEach((g, l) => {
-    const x = mx + (L === 1 ? w / 2 : (l / (L - 1)) * w);
-    const sp = g.length > 1 ? h / (g.length + 1) : h / 2;
+  const marginX = 90;
+  const marginY = 90;
+  const layerCount = groups.length;
+
+  // Find the maximum layer size to calculate dynamic vertical height
+  let maxSize = 1;
+  groups.forEach(g => {
+    if (g.length > maxSize) maxSize = g.length;
+  });
+
+  const layerSpacing = 140; // Horizontal spacing between layers
+  const rowSpacing = 140;   // Vertical spacing between rows in the same layer
+
+  const width = Math.max(1000 - marginX * 2, (layerCount - 1) * layerSpacing);
+  // Height dynamically scales based on maxSize to stretch the graph vertically
+  const height = Math.max(700 - marginY * 2, (maxSize - 1) * rowSpacing);
+
+  groups.forEach((g, L) => {
+    const baseX = marginX + (layerCount === 1 ? width / 2 : (L / (layerCount - 1)) * width);
+    
+    // Vertically center the nodes of this layer inside the total height
+    const layerHeight = (g.length - 1) * rowSpacing;
+    const startY = marginY + (height - layerHeight) / 2;
+
     g.forEach((id, i) => {
+      const baseY = startY + rowSpacing * i;
       vertices[id] = {
-        x, y: my + sp * (i + 1),
-        label: id === "s" || id === "t" ? id : String(i + 1),
+        x: Math.round(baseX),
+        y: Math.round(baseY),
+        label: id === "s" ? "s" : id === "t" ? "t" : String(i + 1),
         role: id === "s" ? "start" : id === "t" ? "goal" : null,
       };
     });
   });
   return vertices;
 }
-function connectLayers(groups, density, seed) {
-  const pairs = [];
-  const seen = new Set();
-  const add = (u, v) => {
-    const k = edgeKey(u, v);
-    if (!seen.has(k)) { seen.add(k); pairs.push([u, v]); }
-  };
-  let s = seed;
-  const rnd = () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
-  for (let l = 0; l < groups.length - 1; l++) {
-    for (const u of groups[l]) {
-      for (const v of groups[l + 1]) {
-        if (rnd() < density) add(u, v);
+
+function bfs(lv, mode = "goal", useDfs = false, noRevisit = true) {
+  const totalVertices = Object.keys(lv.vertices).length;
+  
+  // Convert initial edges to BigInt bitmask
+  let startMask = 0n;
+  lv.edges.forEach(([u, v], idx) => {
+    if (v !== undefined && u !== undefined) {
+      const state = lv.edges[idx][2];
+      if (state === 1) {
+        startMask |= (1n << BigInt(idx));
       }
     }
-    for (const v of groups[l + 1]) {
-      if (!pairs.some(([u, w]) => u === v || w === v)) add(groups[l][0], v);
-    }
-    for (let i = 0; i < groups[l].length - 1; i++) {
-      if (rnd() < 0.4) add(groups[l][i], groups[l][i + 1]);
-    }
-  }
-  return pairs;
-}
-function findRealizablePath(pairs, minLen = 4) {
-  const verts = new Set();
-  for (const [u, v] of pairs) { verts.add(u); verts.add(v); }
-  const ids = [...verts];
-  const adj = new Map(ids.map((id) => [id, new Set()]));
-  for (const [u, v] of pairs) { adj.get(u).add(v); adj.get(v).add(u); }
+  });
 
-  function neighbors(pos, em) {
-    return [...adj.get(pos)].filter((nb) => em.get(edgeKey(pos, nb)) === 1);
-  }
-  function flip(pos, em) {
-    const n = new Map(em);
-    for (const [u, v] of pairs) {
-      if (u === pos || v === pos) n.set(edgeKey(u, v), n.get(edgeKey(u, v)) ^ 1);
-    }
-    return n;
+  // Precompute BigInt flip masks for each vertex
+  const flipMasks = {};
+  for (const id of Object.keys(lv.vertices)) {
+    let fmask = 0n;
+    lv.edges.forEach(([u, v], idx) => {
+      if (u === id || v === id) {
+        fmask |= (1n << BigInt(idx));
+      }
+    });
+    flipMasks[id] = fmask;
   }
 
-  const q = [];
-  for (let mask = 0; mask < (1 << pairs.length); mask++) {
-    const em = new Map(pairs.map(([u, v], i) => [edgeKey(u, v), (mask >> i) & 1]));
-    const key = `s|${[...em.values()].join("")}`;
-    q.push({ pos: "s", em, path: ["s"], seen: new Set([key]) });
-  }
+  // Precompute adjacency list with edge indices
+  const adj = {};
+  Object.keys(lv.vertices).forEach(id => adj[id] = []);
+  lv.edges.forEach(([u, v], idx) => {
+    adj[u].push({ to: v, edgeIdx: idx });
+    adj[v].push({ to: u, edgeIdx: idx });
+  });
 
-  let best = null;
+  // Create mapping from vertex ID to index for BigInt visited bitmask
+  const vertexIndexMap = new Map();
+  Object.keys(lv.vertices).forEach((id, idx) => {
+    vertexIndexMap.set(id, idx);
+  });
+
+  const startVisitedMask = (1n << BigInt(vertexIndexMap.get(lv.start)));
+
+  // Optimize: Storing only depth number and visited BigInt bitmask
+  const q = [{ 
+    pos: lv.start, 
+    mask: startMask, 
+    visitedMask: startVisitedMask, 
+    visitedSize: 1,
+    depth: 0 
+  }];
+  
+  const ser = (pos, mask, visitedMask) => {
+    return `${pos}|${mask.toString()}|${visitedMask.toString()}`;
+  };
+  
+  const seen = new Set([ser(lv.start, startMask, q[0].visitedMask)]);
+  let statesChecked = 0;
+  const maxStates = useDfs ? 150000 : 100000;
+
   while (q.length) {
-    const cur = q.shift();
-    if (cur.pos === "t" && cur.path.length >= minLen) {
-      if (!best || cur.path.length < best.length) best = cur.path;
-      continue;
+    statesChecked++;
+    if (statesChecked > maxStates) return null;
+    
+    const c = useDfs ? q.pop() : q.shift();
+    if (mode === "goal") {
+      if (c.pos === lv.goal) return { length: c.depth };
+    } else {
+      if (c.visitedSize === totalVertices) return { length: c.depth };
     }
-    if (cur.path.length > 14) continue;
-    for (const nb of neighbors(cur.pos, cur.em)) {
-      const em2 = flip(nb, cur.em);
-      const key = `${nb}|${[...em2.values()].join("")}`;
-      if (cur.seen.has(key)) continue;
-      const seen2 = new Set(cur.seen);
-      seen2.add(key);
-      q.push({ pos: nb, em: em2, path: [...cur.path, nb], seen: seen2 });
-    }
-  }
-  return best;
-}
+    
+    const neighbors = adj[c.pos];
+    for (const { to, edgeIdx } of neighbors) {
+      // Is walkable?
+      const isWalkable = (c.mask & (1n << BigInt(edgeIdx))) !== 0n;
+      if (!isWalkable) continue;
 
-function buildAdj(pairs) {
-  const adj = new Map();
-  const add = (u, v) => {
-    if (!adj.has(u)) adj.set(u, new Set());
-    if (!adj.has(v)) adj.set(v, new Set());
-    adj.get(u).add(v);
-    adj.get(v).add(u);
-  };
-  for (const [u, v] of pairs) add(u, v);
-  return adj;
-}
+      const toIdx = BigInt(vertexIndexMap.get(to));
+      const wasVisited = (c.visitedMask & (1n << toIdx)) !== 0n;
 
-function randomWalkPath(adj, minLen = 6) {
-  for (let trial = 0; trial < 60; trial++) {
-    const path = ["s"];
-    let cur = "s";
-    const seen = new Set(["s"]);
-    for (let step = 0; step < 28; step++) {
-      if (cur === "t" && path.length >= minLen) return path;
-      const nbs = [...adj.get(cur)];
-      if (!nbs.length) break;
-      const unvisited = nbs.filter((nb) => !seen.has(nb));
-      let next;
-      if (path.length < minLen - 1) {
-        const pool = unvisited.length ? unvisited : nbs.filter((nb) => nb !== "t" || path.length >= minLen - 2);
-        if (!pool.length) break;
-        next = pool[Math.floor(Math.random() * pool.length)];
-      } else if (cur !== "t") {
-        const queue = [[cur]];
-        const vis = new Set([cur]);
-        let route = null;
-        while (queue.length) {
-          const p = queue.shift();
-          if (p[p.length - 1] === "t") { route = p; break; }
-          for (const nb of adj.get(p[p.length - 1])) {
-            if (!vis.has(nb)) { vis.add(nb); queue.push([...p, nb]); }
-          }
-        }
-        if (!route || route.length < 2) break;
-        next = route[1];
-      } else break;
-      path.push(next);
-      seen.add(next);
-      cur = next;
-    }
-    if (cur !== "t") {
-      const queue = [[cur]];
-      const vis = new Set([cur]);
-      while (queue.length) {
-        const p = queue.shift();
-        if (p[p.length - 1] === "t") { path.push(...p.slice(1)); cur = "t"; break; }
-        for (const nb of adj.get(p[p.length - 1])) {
-          if (!vis.has(nb)) { vis.add(nb); queue.push([...p, nb]); }
-        }
+      // Enforce noRevisit rules if enabled: cannot visit a node that was already visited
+      if (noRevisit && wasVisited) continue;
+
+      const nextMask = c.mask ^ flipMasks[to];
+      const nextVisitedMask = c.visitedMask | (1n << toIdx);
+      const nextVisitedSize = wasVisited ? c.visitedSize : c.visitedSize + 1;
+
+      const key = ser(to, nextMask, nextVisitedMask);
+      if (!seen.has(key)) {
+        seen.add(key);
+        q.push({
+          pos: to,
+          mask: nextMask,
+          visitedMask: nextVisitedMask,
+          visitedSize: nextVisitedSize,
+          depth: c.depth + 1
+        });
       }
     }
-    if (cur === "t" && path.length >= minLen) return path;
   }
   return null;
 }
 
-function makeLevelBig(name, groups, pairs, minLen) {
-  const adj = buildAdj(pairs);
-  for (let i = 0; i < 80; i++) {
-    const path = randomWalkPath(adj, minLen);
-    if (!path) continue;
-    const lv = makeLevel(name, groups, pairs, path);
-    if (lv) return lv;
+function generateLevel(name, layerSizes, minOpt, maxOpt, mode = "goal") {
+  const hasGoal = mode === "goal";
+  const estV = layerSizes.reduce((sum, size) => sum + size, 0);
+  const threshold = 20; // 20 vertices for both modes to manage search scaling
+  const firstLoopAttempts = estV < threshold ? 20000 : 2000;
+  const intraProb = mode === "all" ? 0.90 : 0.30; // High vertical edge probability for Visit All mode
+  
+  // Both modes must be solvable WITHOUT revisit (No Revisit is the default game state)
+  const enforceNoRevisit = true;
+
+  for (let attempt = 0; attempt < firstLoopAttempts; attempt++) {
+    const graph = generatePlanarLayeredGraph(layerSizes, 0.45, hasGoal, intraProb);
+    
+    // Prune mathematically unsolvable graphs for Visit All mode
+    if (mode === "all") {
+      const degrees = {};
+      for (const g of graph.groups) {
+        g.forEach(id => degrees[id] = 0);
+      }
+      graph.edgePairs.forEach(([u, v]) => {
+        degrees[u] = (degrees[u] || 0) + 1;
+        degrees[v] = (degrees[v] || 0) + 1;
+      });
+      let degree1Count = 0;
+      let unsolvable = false;
+      for (const id of Object.keys(degrees)) {
+        const deg = degrees[id];
+        if (deg === 0) {
+          unsolvable = true;
+          break;
+        }
+        if (deg === 1 && id !== "s") {
+          degree1Count++;
+        }
+      }
+      if (unsolvable || degree1Count > 1) {
+        continue;
+      }
+    }
+
+    // Random edge state assignment
+    const rawEdges = graph.edgePairs.map(([u, v]) => {
+      return [u, v, Math.random() < 0.45 ? 1 : 0];
+    });
+
+    const lv = {
+      name,
+      vertices: layoutLayered(graph.groups),
+      edges: rawEdges,
+      start: "s",
+      goal: hasGoal ? "t" : null
+    };
+
+    const sol = bfs(lv, mode, mode === "all" || estV >= threshold, enforceNoRevisit);
+    if (sol) {
+      const vCount = Object.keys(lv.vertices).length;
+      if (vCount < threshold && mode !== "all") {
+        if (sol.length >= minOpt && sol.length <= maxOpt) {
+          return { ...lv, _optimal: sol.length };
+        }
+      } else {
+        return { ...lv, _optimal: sol.length };
+      }
+    }
   }
-  return null;
-}
 
-function makeLevelAuto(name, groups, pairs, minLen = 4) {
-  if (pairs.length > 14) return makeLevelBig(name, groups, pairs, minLen);
-  const path = findRealizablePath(pairs, minLen);
-  if (!path) return null;
-  return makeLevel(name, groups, pairs, path);
-}
+  // Fallback to retry with wider bounds and more attempts
+  const fallbackAttempts = estV < threshold ? 10000 : 8000;
+  for (let attempt = 0; attempt < fallbackAttempts; attempt++) {
+    const graph = generatePlanarLayeredGraph(layerSizes, 0.65, hasGoal, intraProb);
+    
+    // Prune mathematically unsolvable graphs for Visit All mode
+    if (mode === "all") {
+      const degrees = {};
+      for (const g of graph.groups) {
+        g.forEach(id => degrees[id] = 0);
+      }
+      graph.edgePairs.forEach(([u, v]) => {
+        degrees[u] = (degrees[u] || 0) + 1;
+        degrees[v] = (degrees[v] || 0) + 1;
+      });
+      let degree1Count = 0;
+      let unsolvable = false;
+      for (const id of Object.keys(degrees)) {
+        const deg = degrees[id];
+        if (deg === 0) {
+          unsolvable = true;
+          break;
+        }
+        if (deg === 1 && id !== "s") {
+          degree1Count++;
+        }
+      }
+      if (unsolvable || degree1Count > 1) {
+        continue;
+      }
+    }
 
-function makeLevel(name, groups, pairs, path) {
-  const edges = buildFromPath(path, pairs);
-  if (!edges) return null;
-  const lv = { name, vertices: layoutLayered(groups), edges, start: "s", goal: "t" };
-  const sol = bfs(lv);
-  if (!sol) return null;
-  return { ...lv, _optimal: sol.length };
-}
-
-const presets = [
-  {
-    name: "1 はじめの一歩",
-    vertices: {
-      s: { x: 100, y: 250, label: "s", role: "start" },
-      a: { x: 350, y: 150, label: "1" },
-      b: { x: 350, y: 350, label: "2" },
-      t: { x: 600, y: 250, label: "t", role: "goal" },
-    },
-    edges: [["s", "a", 1], ["s", "b", 0], ["a", "t", 0], ["b", "t", 1], ["a", "b", 1]],
-    start: "s", goal: "t", _optimal: 2,
-  },
-  {
-    name: "2 二股",
-    vertices: {
-      s: { x: 80, y: 250, label: "s", role: "start" },
-      a: { x: 250, y: 120, label: "1" },
-      b: { x: 250, y: 380, label: "2" },
-      c: { x: 450, y: 250, label: "3" },
-      t: { x: 620, y: 250, label: "t", role: "goal" },
-    },
-    edges: [
-      ["s", "a", 1], ["s", "b", 1], ["s", "c", 0],
-      ["a", "c", 1], ["b", "c", 0], ["a", "b", 1], ["c", "t", 1],
-    ],
-    start: "s", goal: "t",
-  },
-];
-
-for (const p of presets) {
-  const sol = bfs(p);
-  if (!sol) { console.error("FAIL preset", p.name); process.exit(1); }
-  p._optimal = sol.length;
-}
-
-const midSpecs = [
-  {
-    name: "3 回り道",
-    groups: [["s"], ["a", "b"], ["c"], ["t"]],
-    pairs: [["s", "a"], ["s", "b"], ["a", "c"], ["b", "c"], ["a", "b"], ["c", "t"], ["s", "c"]],
-    minLen: 4,
-  },
-  {
-    name: "4 三方路",
-    groups: [["s"], ["a", "b"], ["c", "d"], ["e"], ["t"]],
-    pairs: [
-      ["s", "a"], ["s", "b"], ["a", "c"], ["b", "d"], ["c", "e"], ["d", "e"],
-      ["b", "c"], ["a", "d"], ["c", "d"], ["e", "t"], ["c", "t"],
-    ],
-    minLen: 5,
-  },
-  {
-    name: "5 交差",
-    groups: [["s"], ["a", "b"], ["c"], ["d", "e"], ["f"], ["t"]],
-    pairs: [
-      ["s", "a"], ["s", "b"], ["a", "c"], ["b", "c"], ["c", "d"], ["c", "e"],
-      ["d", "f"], ["e", "f"], ["d", "e"], ["f", "t"], ["a", "b"],
-    ],
-    minLen: 6,
-  },
-];
-
-for (const spec of midSpecs) {
-  const lv = makeLevelAuto(spec.name, spec.groups, spec.pairs, spec.minLen);
-  if (!lv) { console.error("FAIL", spec.name); process.exit(1); }
-  presets.push(lv);
-}
-
-const bigSpecs = [
-  {
-    name: "6 大門",
-    groups: [["s"], ["a", "b", "c"], ["d", "e", "f"], ["g", "h", "i"], ["j", "k", "l"], ["t"]],
-    density: 0.44, seed: 42, minLen: 6,
-  },
-  {
-    name: "7 迷宮",
-    groups: [["s"], ["a", "b"], ["c", "d", "e"], ["f", "g", "h"], ["i", "j", "k"], ["l", "m"], ["n", "o"], ["t"]],
-    density: 0.48, seed: 77, minLen: 7,
-  },
-  {
-    name: "8 最終試練",
-    groups: [
-      ["s"], ["a", "b", "c"], ["d", "e", "f", "g"], ["h", "i", "j", "k"],
-      ["l", "m", "n"], ["o", "p", "q"], ["r", "u", "v"], ["t"],
-    ],
-    density: 0.5, seed: 99, minLen: 8,
-  },
-];
-
-for (const spec of bigSpecs) {
-  let lv = null;
-  for (let i = 0; i < 300 && !lv; i++) {
-    const pairs = connectLayers(spec.groups, spec.density, spec.seed + i);
-    lv = makeLevelBig(spec.name, spec.groups, pairs, spec.minLen);
+    const baseProb = mode === "all" ? 0.70 : 0.55;
+    const maxProb = mode === "all" ? 0.95 : 0.85;
+    const activeProb = baseProb + (maxProb - baseProb) * (attempt / fallbackAttempts);
+    const rawEdges = graph.edgePairs.map(([u, v]) => [u, v, Math.random() < activeProb ? 1 : 0]);
+    const lv = {
+      name,
+      vertices: layoutLayered(graph.groups),
+      edges: rawEdges,
+      start: "s",
+      goal: hasGoal ? "t" : null
+    };
+    const sol = bfs(lv, mode, mode === "all" || estV >= threshold, enforceNoRevisit);
+    if (sol) {
+      return { ...lv, _optimal: sol.length };
+    }
   }
-  if (!lv) { console.error("FAIL", spec.name); process.exit(1); }
-  presets.push(lv);
+  throw new Error(`Failed to generate solvable level for ${name}`);
 }
 
-for (const p of presets) {
-  const sol = bfs(p);
-  console.log(p.name, "V=" + Object.keys(p.vertices).length, "E=" + p.edges.length, "opt=" + sol.length);
+const goalSpecs = [];
+for (let i = 1; i <= 20; i++) {
+  const layerCount = 3 + Math.floor((i - 1) * 0.5); // Grows from 3 to 12 layers
+  const minSize = i < 5 ? 1 : i < 10 ? 2 : 3;
+  const maxSize = i < 4 ? 2 : (i < 8 ? 4 : (i < 12 ? 6 : (i < 16 ? 8 : 10))); // Vertical height grows up to 10
+  const layers = [];
+  layers.push(1);
+  for (let L = 1; L < layerCount - 1; L++) {
+    layers.push(Math.min(maxSize, minSize + Math.floor(Math.random() * (maxSize - minSize + 1))));
+  }
+  layers.push(1); // Target goal layer
+  
+  const minOpt = Math.min(25, 2 + Math.floor((i - 1) * 0.9));
+  const maxOpt = minOpt + 6;
+  goalSpecs.push({ name: `Level ${i}`, layers, min: minOpt, max: maxOpt });
 }
 
-const fs = require("fs");
-const out = presets.map(({ _optimal, ...rest }) => ({ ...rest, _optimal }));
-fs.writeFileSync(__dirname + "/presets.json", JSON.stringify(out, null, 2));
-console.log("wrote presets.json");
+const allSpecs = [];
+for (let i = 1; i <= 20; i++) {
+  const layerCount = 3 + Math.floor((i - 1) * 0.25); // Grows from 3 to 7 layers
+  const minSize = 2; // Always keep size >= 2 for Visit All mode to prevent bottlenecks
+  const maxSize = i < 5 ? 2 : (i < 10 ? 3 : 4); // Vertical height grows up to 4 to balance Hamiltonian path solvability
+  const layers = [];
+  layers.push(1);
+  for (let L = 1; L < layerCount - 1; L++) {
+    layers.push(Math.min(maxSize, minSize + Math.floor(Math.random() * (maxSize - minSize + 1))));
+  }
+  layers.push(Math.min(maxSize, minSize + Math.floor(Math.random() * (maxSize - minSize + 1)))); // NoGoal last layer
+  
+  const minOpt = Math.min(25, 3 + Math.floor((i - 1) * 0.8));
+  const maxOpt = minOpt + 6;
+  allSpecs.push({ name: `Level ${i}`, layers, min: minOpt, max: maxOpt });
+}
+
+console.log("Generating Goal Mode Presets (20 levels)...");
+const presetsGoal = goalSpecs.map(spec => {
+  const lv = generateLevel(spec.name, spec.layers, spec.min, spec.max, "goal");
+  console.log(`Generated Goal Level: ${lv.name} (V=${Object.keys(lv.vertices).length}, E=${lv.edges.length}, opt=${lv._optimal})`);
+  return lv;
+});
+
+console.log("\nGenerating Visit All Mode Presets (20 levels)...");
+const presetsAll = allSpecs.map(spec => {
+  const lv = generateLevel(spec.name, spec.layers, spec.min, spec.max, "all");
+  console.log(`Generated Visit All Level: ${lv.name} (V=${Object.keys(lv.vertices).length}, E=${lv.edges.length}, opt=${lv._optimal})`);
+  return lv;
+});
+
+const out = {
+  goal: presetsGoal,
+  all: presetsAll
+};
+
+// Write JSON
+fs.writeFileSync(path.join(__dirname, "presets.json"), JSON.stringify(out, null, 2));
+console.log("\nWrote presets.json");
+
+// Write JS (readable JS constants)
+const jsContent = `// Auto-generated level presets for Incident Flip Walk
+const PRESETS_GOAL = ${JSON.stringify(presetsGoal, null, 2)};
+
+const PRESETS_ALL = ${JSON.stringify(presetsAll, null, 2)};
+`;
+fs.writeFileSync(path.join(__dirname, "presets.js"), jsContent);
+console.log("Wrote presets.js");
