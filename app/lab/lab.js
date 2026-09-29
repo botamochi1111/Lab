@@ -12,7 +12,7 @@ const TOOL_HINTS = {
   move: ["頂点をドラッグして移動", "Drag a vertex to move it"],
   addNode: ["空いている場所をクリックして頂点を追加", "Click an empty spot to add a vertex"],
   addEdge: ["頂点を2つ順にクリックして辺を追加(Escで取消)", "Click two vertices to add an edge (Esc cancels)"],
-  cycleEdge: ["辺をクリック: オフ ⇄ オン", "Click an edge: OFF ⇄ ON"],
+  cycleEdge: ["辺をクリック: オフ → オン → 固定 → オフ", "Click an edge: OFF → ON → FIXED → OFF"],
   subdivide: ["辺をクリックして真ん中に頂点を挿入", "Click an edge to insert a vertex in the middle"],
   delete: ["頂点または辺をクリックして削除", "Click a vertex or edge to delete it"],
   setStart: ["頂点をクリックしてスタートに指定", "Click a vertex to make it the start"],
@@ -113,6 +113,7 @@ function changed() {
   lastAnalysis = null;
   $("analysisOut").innerHTML = "";
   $("proofOut").innerHTML = "";
+  $("stOut").innerHTML = "";
   $("solutionControls").hidden = true;
   if (tab === "play") startPlay();
   refreshAll();
@@ -129,7 +130,7 @@ function loadLevel(lv) {
   $("levelNote").value = level.note;
   $("modeSelect").value = level.mode;
   $("chkRevisit").checked = level.canRevisit;
-  $("chkDoors").checked = level.mode === "goal";
+  $("chkDoors").checked = false;
   changed();
 }
 
@@ -204,14 +205,20 @@ function render() {
       el("line", { x1: p.x, y1: p.y, x2: q.x, y2: q.y, stroke: "#4aa3ff", "stroke-width": 14, opacity: 0.25, "pointer-events": "none" }, gE);
     }
     const walk = st ? E.walkable(G, k, st.f) : e.w !== E.OFF;
-    el("line", {
-      x1: p.x, y1: p.y, x2: q.x, y2: q.y,
-      stroke: walk ? "#111" : "#bbb",
-      "stroke-width": walk ? 3.5 : 2,
-      "stroke-dasharray": walk ? "0" : "8 6",
-      "stroke-linecap": "round",
-      "pointer-events": "none",
-    }, gE);
+    if (e.w === E.FIXED) {
+      // Fixed (always walkable, never flips): a hollow double line.
+      el("line", { x1: p.x, y1: p.y, x2: q.x, y2: q.y, stroke: "#111", "stroke-width": 7, "stroke-linecap": "round", "pointer-events": "none" }, gE);
+      el("line", { x1: p.x, y1: p.y, x2: q.x, y2: q.y, stroke: "#fff", "stroke-width": 2.5, "stroke-linecap": "round", "pointer-events": "none" }, gE);
+    } else {
+      el("line", {
+        x1: p.x, y1: p.y, x2: q.x, y2: q.y,
+        stroke: walk ? "#111" : "#bbb",
+        "stroke-width": walk ? 3.5 : 2,
+        "stroke-dasharray": walk ? "0" : "8 6",
+        "stroke-linecap": "round",
+        "pointer-events": "none",
+      }, gE);
+    }
   });
 
   // Hub door markers: green = open (edge at rest OFF), red = closed.
@@ -276,7 +283,7 @@ function renderEditStats() {
   G.edges.forEach((e) => counts[e.w]++);
   $("editStats").innerHTML = `<table>
     <tr><td>${L("頂点", "Vertices")}</td><td>${G.n}</td></tr>
-    <tr><td>${L("辺", "Edges")}</td><td>${G.edges.length}${L(`(オフ ${counts[0]} / オン ${counts[1]})`, ` (OFF ${counts[0]} / ON ${counts[1]})`)}</td></tr>
+    <tr><td>${L("辺", "Edges")}</td><td>${G.edges.length}${L(`(オフ ${counts[0]} / オン ${counts[1]}${counts[2] ? ` / 固定 ${counts[2]}` : ""})`, ` (OFF ${counts[0]} / ON ${counts[1]}${counts[2] ? ` / FIXED ${counts[2]}` : ""})`)}</td></tr>
     <tr><td>${L("スタート / ゴール", "Start / goal")}</td><td>${level.start || "-"} / ${level.mode === "goal" ? level.goal || "-" : L("(なし)", "(none)")}</td></tr>
     ${level.mode === "all" && !level.canRevisit ? `<tr><td>${L("本当に使える辺", "Usable edges")}</td><td>${L(`${derived}本(一度も通れない飾り ${decoys}本)`, `${derived} (${decoys} decoys that can never be used)`)}</td></tr>` : ""}
   </table>`;
@@ -353,6 +360,8 @@ function runAnalysis() {
     rows.push([L("騙し状態", "Deceptive states"), L(`${h.deceptiveStates}個(見た目は大丈夫だが実は詰んでいる状態)`, `${h.deceptiveStates} (look fine but are already lost)`)]);
     rows.push([L("「行き先の少ない所から回る」で解けるか", "Solved by the fewest-exits-first greedy"), h.greedySolves ? `<span class="ng">${L("解けてしまう", "Yes (too easy)")}</span>` : `<span class="ok">${L("解けない", "No")}</span>`]);
   }
+  const score = R.mode === "all" && !R.revisit ? E.difficulty(G, r) : null;
+  if (score != null) rows.push([L("難易度スコア", "Difficulty score"), `${score.toFixed(1)} ${L("(ゲームのステージ並べ替えと同じ式)", "(same formula the game stages are ordered by)")}`]);
   rows.push([L("計算時間", "Time"), `${ms} ms`]);
   let html = "<table>" + rows.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join("") + "</table>";
   if (r.human && r.human.plausibleTraps.length) {
@@ -388,34 +397,229 @@ function updateSolStep() {
 
 // ---------------- proof tab ----------------
 
+const HALLWAY_WHY = {
+  noInternal: ["内部頂点がない(ハブ同士が直結)", "no internal vertex (hubs joined directly)"],
+  sameHub: ["両端が同じハブ", "both ends at the same hub"],
+  fixed: ["固定辺を含む", "contains a fixed edge"],
+  interiorNotOff: ["内側の辺がオフでない", "an interior edge is not OFF"],
+  startGoalInside: ["途中にスタート/ゴールがある", "start/goal lies inside"],
+};
+
+// Which hallways the lemma compresses, and why the others stay exact.
 function renderProofChecks() {
   const G = compiled();
-  if (level.mode !== "goal" || !level.goal) {
-    $("proofChecks").innerHTML = `<span class="warn">${L("モードをREACH_GOALにしてゴールを指定してください", "Switch the mode to REACH_GOAL and set a goal")}</span>`;
+  if (!level.goal || !level.vertices[level.goal]) {
+    $("proofChecks").innerHTML = `<span class="warn">${L("「ゴール指定」でゴールの頂点を選んでください", "Pick a goal vertex with \"Set goal\"")}</span>`;
     return;
   }
   const H = E.hubStructure(G);
   const hubs = H.junctions.filter((v) => H.deg[v] >= 3);
+  const exact = [];
+  let ok = 0;
+  H.hallways.forEach((h) => {
+    let why = null;
+    if (!h.internal.length) why = "noInternal";
+    else if (h.a.node === h.b.node) why = "sameHub";
+    else if (h.edges.some((k) => G.edges[k].w === E.FIXED)) why = "fixed";
+    else if (h.edges.slice(1, -1).some((k) => G.edges[k].w !== E.OFF)) why = "interiorNotOff";
+    else if (h.internal.includes(G.s) || h.internal.includes(G.t)) why = "startGoalInside";
+    if (why) exact.push(`${G.ids[h.a.node]}…${G.ids[h.b.node]}: ${L(...HALLWAY_WHY[why])}`);
+    else ok++;
+  });
   $("proofChecks").innerHTML = `<table>
     <tr><td>${L("ハブ(次数3以上)", "Hubs (degree ≥ 3)")}</td><td>${hubs.map((v) => `${G.ids[v]}${L(`(次数${H.deg[v]})`, ` (deg ${H.deg[v]})`)}`).join(", ") || L("なし", "none")}</td></tr>
-    <tr><td>${L("通路", "Hallways")}</td><td>${H.hallways.length}</td></tr>
-    <tr><td>${L("補題の前提", "Lemma hypotheses")}</td><td>${H.problems.length ? H.problems.map((p) => `<div class="ng">✗ ${trEngine(p)}</div>`).join("") : `<span class="ok">${L("✓ すべて満たす", "✓ all satisfied")}</span>`}</td></tr>
+    <tr><td>${L("補題で圧縮する通路", "Hallways the lemma compresses")}</td><td>${ok} / ${H.hallways.length}</td></tr>
+    <tr><td>${L("そのまま厳密に扱う通路", "Hallways kept exact")}</td><td>${exact.length ? exact.map((x) => `<div>${x}</div>`).join("") : L("なし", "none")}</td></tr>
   </table>`;
 }
 
-function runLemma() {
-  const G = compiled();
-  if (level.mode !== "goal" || !level.goal) return;
-  const r = E.verifyLemma(G);
-  if (!r.ok) {
-    $("proofOut").innerHTML = `<span class="ng">${L("前提を満たしていないため検証できません", "Cannot verify: hypotheses not satisfied")}</span>`;
+// Full state search for S→T on ANY graph (fixed edges, non-leaf start/goal,
+// anything): reachability with and without revisits, shortest walk.
+function runSTSearch() {
+  if (!level.goal || !level.vertices[level.goal]) {
+    $("stOut").innerHTML = `<span class="warn">${L("「ゴール指定」でゴールの頂点を選んでください", "Pick a goal vertex with \"Set goal\"")}</span>`;
     return;
   }
+  const G = compiled();
+  const t0 = performance.now();
+  const rev = E.analyze(G, { mode: "goal", revisit: true });
+  const nor = E.analyze(G, { mode: "goal", revisit: false });
+  const ms = Math.round(performance.now() - t0);
+  if (rev.error) { $("stOut").innerHTML = `<span class="ng">${trEngine(rev.error)}</span>`; return; }
+  const yes = (b) => (b ? `<span class="ok">${L("到達可", "reachable")}</span>` : `<span class="ng">${L("到達不可", "unreachable")}</span>`);
+  const path = (r) => [level.start, ...r.path.map((i) => G.ids[i])].join(" → ");
+  const needRevisit = rev.solvable && !nor.solvable;
+  $("stOut").innerHTML = `<table>
+    <tr><td>${L("再訪あり", "With revisits")}</td><td>${yes(rev.solvable)}${rev.solvable ? L(`(最短${rev.optimal}手・最短解${rev.optCount}本)`, ` (shortest ${rev.optimal} moves, ${rev.optCount} shortest)`) : ""}</td></tr>
+    <tr><td>${L("再訪なし", "Without revisits")}</td><td>${yes(nor.solvable)}${nor.solvable ? L(`(最短${nor.optimal}手)`, ` (shortest ${nor.optimal} moves)`) : ""}</td></tr>
+    <tr><td>${L("再訪が必要か", "Revisits needed")}</td><td>${needRevisit ? `<span class="ok">${L("必要", "yes")}</span>` : L("不要", "no")}</td></tr>
+    <tr><td>${L("到達可能な状態(再訪あり)", "Reachable states (with revisits)")}</td><td>${rev.reachable}${rev.truncated ? ` <span class="warn">${L("上限で打ち切り", "stopped at the limit")}</span>` : ""}</td></tr>
+    <tr><td>${L("計算時間", "Time")}</td><td>${ms} ms</td></tr>
+  </table>
+  ${rev.solvable ? `<div class="small" style="margin-top:6px">${L("最短解(再訪あり)", "Shortest solution (with revisits)")}: ${path(rev)}</div>` : ""}`;
+}
+
+// Turn the graph into one that meets the lemma's hypotheses, keeping the
+// drawing: hallways are split at the exact midpoint of the existing edge (the
+// lines stay put), and a leaf added at the start/goal goes in the emptiest
+// direction around it. Each change says whether it keeps the puzzle's behavior:
+//   - non-leaf start s: add s' -ON- m -OFF- s and flip s's other (non-fixed)
+//     edges, since s now gets one arrival before play continues. Exact, except
+//     that m is an extra vertex next to s one could step back to.
+//   - non-leaf goal t: add t -OFF- m -OFF- t'. Walkable right after the first
+//     arrival at t, so reachability is exact.
+//   - a leaf joined straight to a hub: split it; the half at the start (or,
+//     for the goal, at the hub) keeps its state, the other half is OFF. Exact.
+//   - a hub-hub edge: split it the same way; only one direction keeps its
+//     behavior, so this changes the puzzle.
+//   - hallway interiors that aren't OFF are set to OFF: changes the puzzle.
+// Fixed edges and degree-2 cycles are left alone (reported). Undoable.
+function conformToLemma() {
+  if (!level.goal || !level.vertices[level.goal]) {
+    $("proofOut").innerHTML = `<span class="warn">${L("「ゴール指定」でゴールの頂点を選んでください", "Pick a goal vertex with \"Set goal\"")}</span>`;
+    return;
+  }
+  const before = E.analyze(compiled(), { mode: "goal", revisit: true });
+  snapshot();
+  const exact = [];
+  const changing = [];
+  const pos = (id) => level.vertices[id];
+  const addVertex = (x, y) => {
+    const nid = newVertexId();
+    level.vertices[nid] = { x: Math.round(x), y: Math.round(y) };
+    return nid;
+  };
+  const distToSegment = (px, py, a, b) => {
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const len2 = dx * dx + dy * dy || 1;
+    const t = Math.max(0, Math.min(1, ((px - a.x) * dx + (py - a.y) * dy) / len2));
+    return Math.hypot(px - (a.x + t * dx), py - (a.y + t * dy));
+  };
+  // Emptiest direction around vertex id: maximize the clearance of the two
+  // new points (at `step` and 2*step) from existing vertices and edges.
+  const emptiestDirection = (id, step) => {
+    const p = pos(id);
+    let best = null;
+    for (let deg = 0; deg < 360; deg += 15) {
+      const a = (deg * Math.PI) / 180;
+      const pts = [1, 2].map((k) => [p.x + Math.cos(a) * step * k, p.y + Math.sin(a) * step * k]);
+      let clear = Infinity;
+      for (const [x, y] of pts) {
+        for (const [vid, q] of Object.entries(level.vertices)) if (vid !== id) clear = Math.min(clear, Math.hypot(x - q.x, y - q.y));
+        for (const [u, v] of level.edges) if (u !== id && v !== id) clear = Math.min(clear, distToSegment(x, y, pos(u), pos(v)));
+      }
+      if (!best || clear > best.clear) best = { clear, dx: Math.cos(a) * step, dy: Math.sin(a) * step };
+    }
+    return best;
+  };
+  // Split edge k on the edge itself (so the line stays put), as near the
+  // midpoint as possible without landing on another vertex — two crossing
+  // edges can share a midpoint. The half at `from` keeps its state, the other
+  // half is OFF.
+  const split = (k, from) => {
+    const [u, v, w] = level.edges[k];
+    const to = u === from ? v : u;
+    const a = pos(u), b = pos(v);
+    let best = null;
+    for (const t of [0.5, 0.4, 0.6, 0.33, 0.67, 0.25, 0.75]) {
+      const x = a.x + (b.x - a.x) * t, y = a.y + (b.y - a.y) * t;
+      let clear = Infinity;
+      for (const q of Object.values(level.vertices)) clear = Math.min(clear, Math.hypot(x - q.x, y - q.y));
+      if (clear >= 30) { best = { x, y }; break; }
+      if (!best || clear > best.clear) best = { x, y, clear };
+    }
+    const m = addVertex(best.x, best.y);
+    level.edges[k] = [from, m, w];
+    level.edges.push([m, to, E.OFF]);
+    return m;
+  };
+
+  let G = compiled();
+  const deg = G.adj.map((a) => a.length);
+  if (deg[G.s] !== 1) {
+    const old = level.start;
+    const d = emptiestDirection(old, 80);
+    level.edges.forEach((e) => { if ((e[0] === old || e[1] === old) && e[2] !== E.FIXED) e[2] ^= 1; });
+    const m = addVertex(pos(old).x + d.dx, pos(old).y + d.dy);
+    const s2 = addVertex(pos(old).x + 2 * d.dx, pos(old).y + 2 * d.dy);
+    level.edges.push([s2, m, E.ON], [m, old, E.OFF]);
+    level.start = s2;
+    exact.push(L(`スタートの外側に ${s2}-${m} を追加し、${old} の辺を反転`, `added ${s2}-${m} outside the start and flipped ${old}'s edges`));
+  }
+  if (deg[G.t] !== 1) {
+    const old = level.goal;
+    const d = emptiestDirection(old, 80);
+    const m = addVertex(pos(old).x + d.dx, pos(old).y + d.dy);
+    const t2 = addVertex(pos(old).x + 2 * d.dx, pos(old).y + 2 * d.dy);
+    level.edges.push([old, m, E.OFF], [m, t2, E.OFF]);
+    level.goal = t2;
+    exact.push(L(`ゴールの外側に ${m}-${t2} を追加`, `added ${m}-${t2} outside the goal`));
+  }
+
+  G = compiled();
+  let H = E.hubStructure(G);
+  for (const h of H.hallways) {
+    if (h.internal.length > 0 || h.a.node === h.b.node) continue;
+    const k = h.a.edge;
+    const [u, v] = level.edges[k].slice(0, 2);
+    const ends = [G.ids[h.a.node], G.ids[h.b.node]];
+    if (ends.includes(level.start)) {
+      split(k, level.start);
+      exact.push(L(`スタートの辺 ${u}-${v} の中点に点を追加`, `midpoint added on the start edge ${u}-${v}`));
+    } else if (ends.includes(level.goal)) {
+      split(k, ends[0] === level.goal ? ends[1] : ends[0]);
+      exact.push(L(`ゴールの辺 ${u}-${v} の中点に点を追加`, `midpoint added on the goal edge ${u}-${v}`));
+    } else {
+      split(k, ends[0]);
+      changing.push(L(`${u}-${v} の中点に点を追加(${ends[0]}→${ends[1]} 向きだけ元と同じ動き)`, `midpoint added on ${u}-${v} (only ${ends[0]}→${ends[1]} keeps its behavior)`));
+    }
+  }
+  G = compiled();
+  H = E.hubStructure(G);
+  for (const h of H.hallways) {
+    for (const k of h.edges.slice(1, -1)) {
+      if (level.edges[k][2] === E.OFF || level.edges[k][2] === E.FIXED) continue;
+      level.edges[k][2] = E.OFF;
+      changing.push(L(`通路の内側 ${level.edges[k][0]}-${level.edges[k][1]} をオフに`, `hallway interior ${level.edges[k][0]}-${level.edges[k][1]} set OFF`));
+    }
+  }
+  if (!exact.length && !changing.length) undoStack.pop();
+  if (level.mode !== "goal") { level.mode = "goal"; $("modeSelect").value = "goal"; }
+  changed();
+
+  const after = E.analyze(compiled(), { mode: "goal", revisit: true });
+  const reach = (r) => (r.solvable ? L(`到達可(最短${r.optimal}手)`, `reachable (${r.optimal} moves)`) : L("到達不可", "unreachable"));
+  const list = (xs) => xs.map((c) => `・${c}`).join("<br>");
+  const left = E.hubStructure(compiled()).problems;
+  $("proofOut").innerHTML =
+    (exact.length ? `<div class="small"><b>${L("動きを変えない変更", "Behavior-preserving changes")}</b><br>${list(exact)}</div>` : "") +
+    (changing.length ? `<div class="small warn" style="margin-top:6px"><b>${L("動きが変わる変更", "Changes that alter the puzzle")}</b><br>${list(changing)}</div>` : "") +
+    (!exact.length && !changing.length ? `<div class="small">${L("変更なし(もう前提を満たしています)", "no changes (hypotheses already hold)")}</div>` : "") +
+    `<div class="small" style="margin-top:6px">${L("再訪ありのゴール到達", "Goal with revisits")}: ${reach(before)} → ${reach(after)}${before.solvable === after.solvable ? "" : ` <span class="ng">${L("(変わった)", "(changed)")}</span>`}</div>` +
+    (left.length
+      ? `<div class="warn" style="margin-top:6px">${L("自動では直せない前提", "Hypotheses that can't be fixed automatically")}:<br>${left.map((p) => `✗ ${trEngine(p)}`).join("<br>")}</div>`
+      : `<div class="ok" style="margin-top:6px">${L("✓ 補題の前提をすべて満たしました(Ctrl+Z で元に戻せます)", "✓ All lemma hypotheses hold now (Ctrl+Z to undo)")}</div>`);
+}
+
+// Lemma check on the graph as it is: compress the hallways that meet the
+// lemma's conditions, keep the rest exact, compare with the full search.
+function runLemma() {
+  if (!level.goal || !level.vertices[level.goal]) {
+    $("proofOut").innerHTML = `<span class="warn">${L("「ゴール指定」でゴールの頂点を選んでください", "Pick a goal vertex with \"Set goal\"")}</span>`;
+    return;
+  }
+  const G = compiled();
+  const t0 = performance.now();
+  const r = E.verifyLemmaHybrid(G);
+  const ms = Math.round(performance.now() - t0);
+  const reach = (b) => (b ? L("ゴール到達可", "goal reachable") : L("ゴール到達不可", "goal unreachable"));
   $("proofOut").innerHTML = `<table>
-    <tr><td>${L("具体グラフ(全状態探索)", "Concrete graph (full search)")}</td><td>${L(`ハブ/葉にいる状態 ${r.concreteStates}個、ゴール${r.concreteGoal ? "到達可" : "到達不可"}`, `${r.concreteStates} states at hubs/leaves, goal ${r.concreteGoal ? "reachable" : "unreachable"}`)}</td></tr>
-    <tr><td>${L("補題の抽象モデル", "Lemma's abstract model")}</td><td>${L(`状態 ${r.abstractStates}個、ゴール${r.abstractGoal ? "到達可" : "到達不可"}`, `${r.abstractStates} states, goal ${r.abstractGoal ? "reachable" : "unreachable"}`)}</td></tr>
-    <tr><td>${L("到達集合", "Reachable sets")}</td><td>${r.equal ? `<span class="ok">${L("✓ 完全に一致", "✓ identical")}</span>` : `<span class="ng">${L(`✗ 不一致(抽象に無い ${r.missingInAbstract} / 具体に無い ${r.missingInConcrete})`, `✗ differ (${r.missingInAbstract} missing in abstract / ${r.missingInConcrete} missing in concrete)`)}</span>`}</td></tr>
-    ${r.truncated ? `<tr><td>${L("注意", "Note")}</td><td class="warn">${L("上限で打ち切り", "stopped at the limit")}</td></tr>` : ""}
+    <tr><td>${L("補題を適用した通路", "Hallways compressed by the lemma")}</td><td>${r.compressed}${r.compressed ? "" : ` <span class="warn">${L("(適用できる通路がないので、比較は自明に一致)", "(nothing to compress, so the comparison is trivially equal)")}</span>`}</td></tr>
+    <tr><td>${L("具体グラフ(全状態探索)", "Concrete graph (full search)")}</td><td>${L(`${r.concreteStates}状態(比較対象 ${r.projectedStates})、${reach(r.concreteGoal)}`, `${r.concreteStates} states (${r.projectedStates} compared), ${reach(r.concreteGoal)}`)}</td></tr>
+    <tr><td>${L("補題で圧縮したモデル", "Lemma-compressed model")}</td><td>${L(`${r.hybridStates}状態、${reach(r.hybridGoal)}`, `${r.hybridStates} states, ${reach(r.hybridGoal)}`)}</td></tr>
+    <tr><td>${L("到達集合", "Reachable sets")}</td><td>${r.equal ? `<span class="ok">${L("✓ 完全に一致", "✓ identical")}</span>` : `<span class="ng">${L(`✗ 不一致(圧縮モデルに無い ${r.missingInHybrid} / 具体に無い ${r.missingInConcrete})`, `✗ differ (${r.missingInHybrid} missing in compressed / ${r.missingInConcrete} missing in concrete)`)}</span>`}</td></tr>
+    ${r.truncated ? `<tr><td>${L("注意", "Note")}</td><td class="warn">${L("状態数の上限で打ち切り(一致は途中までの結果)", "stopped at the state limit (partial comparison)")}</td></tr>` : ""}
+    <tr><td>${L("計算時間", "Time")}</td><td>${ms} ms</td></tr>
   </table>`;
 }
 
@@ -480,9 +684,12 @@ svg.addEventListener("pointerdown", (evt) => {
       level.start = id;
       changed();
     } else if (tool === "setGoal") {
-      if (level.goal === id) return;
+      if (level.goal === id && level.mode === "goal") return;
       snapshot();
       level.goal = id;
+      // A goal only means something in REACH_GOAL mode, so switch to it.
+      level.mode = "goal";
+      $("modeSelect").value = "goal";
       changed();
     }
     return;
@@ -492,7 +699,7 @@ svg.addEventListener("pointerdown", (evt) => {
     const k = Number(edgeEl.dataset.edge);
     if (tool === "cycleEdge") {
       snapshot();
-      level.edges[k][2] = level.edges[k][2] === 1 ? 0 : 1;
+      level.edges[k][2] = (level.edges[k][2] + 1) % 3;
       changed();
     } else if (tool === "delete") {
       snapshot();
@@ -587,12 +794,58 @@ $("btnEditRedo").addEventListener("click", () => { if (tab !== "edit") switchTab
 $("btnReset").addEventListener("click", () => { startPlay(); refreshAll(); });
 
 $("btnAnalyze").addEventListener("click", runAnalysis);
+
+// Every game VISIT_ALL stage (and its bonus) with the same metrics the stage
+// generator uses. Rows are computed one per tick so the page stays responsive;
+// clicking a row opens that level.
+function runStageTable() {
+  const out = $("stageTableOut");
+  const entries = [];
+  menu.forEach((lv, k) => {
+    if (lv.mode === "all" && /^(Level|Bonus) /.test(lv.name)) entries.push({ k, lv });
+  });
+  const head = `<tr><td>${L("ステージ", "Stage")}</td><td>${L("頂点", "V")}</td><td>${L("歩ける道", "Walks")}</td><td>${L("罠", "Traps")}</td><td>${L("最大深さ", "Max depth")}</td><td>${L("迷う", "Ambig.")}</td><td>${L("貪欲で解ける", "Greedy")}</td><td>${L("難易度", "Difficulty")}</td></tr>`;
+  const rows = [];
+  let i = 0;
+  const step = () => {
+    if (i >= entries.length) return;
+    const { k, lv } = entries[i++];
+    const G = E.compile({ ...lv, mode: "all" });
+    const r = E.analyze(G, { mode: "all", revisit: false });
+    const h = r.human;
+    const d = E.difficulty(G, r);
+    rows.push(`<tr data-k="${k}" style="cursor:pointer"><td>${lv.name}</td><td>${G.n}</td><td>${r.walkCount ?? "-"}</td><td>${h ? h.plausibleTraps.length : "-"}</td><td>${h ? Math.max(0, ...h.plausibleTraps.map((t) => t.depth)) : "-"}</td><td>${h ? `${h.ambiguousSteps}/${G.n - 1}` : "-"}</td><td>${h ? (h.greedySolves ? L("はい", "yes") : L("いいえ", "no")) : "-"}</td><td>${d != null ? d.toFixed(1) : "-"}</td></tr>`);
+    out.innerHTML = `<table>${head}${rows.join("")}</table>` + (i < entries.length ? `<div class="small">${i} / ${entries.length}</div>` : "");
+    setTimeout(step, 0);
+  };
+  step();
+}
+$("btnStageTable").addEventListener("click", runStageTable);
+$("stageTableOut").addEventListener("click", (e) => {
+  const tr = e.target.closest("tr[data-k]");
+  if (!tr) return;
+  sel.value = tr.dataset.k;
+  loadLevel(menu[Number(tr.dataset.k)]);
+});
 $("btnSolPrev").addEventListener("click", () => { if (solution && solution.step > 0) { solution.step--; updateSolStep(); } });
 $("btnSolNext").addEventListener("click", () => { if (solution && solution.step < solution.states.length - 1) { solution.step++; updateSolStep(); } });
 $("btnSolExit").addEventListener("click", () => { solution = null; $("solutionControls").hidden = true; render(); });
 
-$("btnLemma").addEventListener("click", runLemma);
-$("btnPCheck").addEventListener("click", runPCheck);
+// Proof-tab buttons: say "computing" right away (large graphs take a few
+// seconds), then run; any exception is shown in the output instead of vanishing.
+function runInProofOut(fn, out = "proofOut") {
+  $(out).innerHTML = `<span class="small">${L("計算中…", "Computing…")}</span>`;
+  setTimeout(() => {
+    try { fn(); } catch (err) {
+      $(out).innerHTML = `<span class="ng">${L("エラー", "Error")}: ${String(err && err.message || err)}</span>`;
+      console.error(err);
+    }
+  }, 30);
+}
+$("btnLemma").addEventListener("click", () => runInProofOut(runLemma));
+$("btnSTSearch").addEventListener("click", () => runInProofOut(runSTSearch, "stOut"));
+$("btnPCheck").addEventListener("click", () => runInProofOut(runPCheck));
+$("btnConform").addEventListener("click", () => runInProofOut(conformToLemma));
 
 $("btnNew").addEventListener("click", () => loadLevel({ name: "new level", vertices: {}, edges: [], start: null, goal: null, mode: level.mode }));
 
@@ -644,6 +897,9 @@ function labelMenu() {
 }
 addGroup(["ラボのサンプル", "Lab samples"], SAMPLES);
 if (window.PRESETS_ALL) addGroup(["ゲーム: VISIT_ALL", "Game: VISIT_ALL"], window.PRESETS_ALL, "all");
+if (window.BONUS_ALL) {
+  addGroup(["ゲーム: ボーナス", "Game: bonus"], Object.entries(window.BONUS_ALL).map(([i, lv]) => ({ ...lv, name: `Bonus (Level ${Number(i) + 1})`, name_en: `Bonus (Level ${Number(i) + 1})` })), "all");
+}
 if (window.PRESETS_GOAL) addGroup(["ゲーム: S→T", "Game: S→T"], window.PRESETS_GOAL, "goal");
 labelMenu();
 
@@ -655,6 +911,7 @@ function setLang(lang) {
   applyStaticLang();
   labelMenu();
   $("proofOut").innerHTML = "";
+  $("stOut").innerHTML = "";
   if (lastAnalysis && tab === "analyze") runAnalysis();
   refreshAll();
 }
@@ -663,3 +920,4 @@ sel.addEventListener("change", () => loadLevel(menu[Number(sel.value)]));
 
 loadLevel(menu[0]);
 setLang(LANG);
+window.IFW_LAB_READY = true;

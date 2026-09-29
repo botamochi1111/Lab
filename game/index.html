@@ -266,6 +266,7 @@ body {
   margin-bottom: 0.7rem;
 }
 .panel-title-row .panel-title { margin-bottom: 0; }
+.panel-title-actions { display: flex; gap: 8px; }
 
 .howto-btn {
   width: auto;
@@ -408,6 +409,9 @@ button.ghost {
   width: 100%;
 }
 button.ghost:hover:not(:disabled) { background: rgba(255, 180, 84, 0.08); border-color: var(--amber); color: var(--amber); }
+/* Bonus branch button: amber like the bonus nodes on the stage map. */
+button.bonus { border: 1px solid var(--amber); color: var(--amber); font-weight: 700; }
+button.bonus:hover:not(:disabled) { background: rgba(255, 180, 84, 0.12); border-color: var(--amber); color: var(--amber); }
 
 .toggle-field { display: flex; flex-direction: column; gap: 0.32rem; flex: 1 1 130px; }
 .toggle {
@@ -581,7 +585,7 @@ button.ghost:hover:not(:disabled) { background: rgba(255, 180, 84, 0.08); border
   <div class="title-screen" id="titleScreen">
     <div class="title-inner">
       <div class="title-logo mono-display glow">INCIDENT_<wbr>FLIP_WALK</div>
-      <p class="title-tagline">a walk on a graph that rewires itself under your feet</p>
+      <p class="title-tagline" data-ja="歩くたびに道が組み変わるグラフの上を歩く">a walk on a graph that rewires itself under your feet</p>
       <div class="boot-log" id="bootLog"></div>
       <div class="title-prompt" id="titlePrompt" hidden>TAP TO START</div>
     </div>
@@ -605,45 +609,48 @@ button.ghost:hover:not(:disabled) { background: rgba(255, 180, 84, 0.08); border
   </header>
 
   <nav class="tabbar">
-    <button class="tab-btn" id="tabMap">// MAP</button>
-    <button class="tab-btn" id="tabBoard">// BOARD</button>
+    <button class="tab-btn" id="tabMap" data-ja="マップ">MAP</button>
+    <button class="tab-btn" id="tabBoard" data-ja="盤面">BOARD</button>
   </nav>
 
   <main class="views">
     <section class="view" id="viewMap">
       <section class="panel stagemap-panel">
         <div class="panel-title-row">
-          <div class="panel-title">// STAGE MAP</div>
-          <button id="btnHowToPlayMap" class="howto-btn">HOW TO PLAY</button>
+          <div class="panel-title" data-ja="ステージマップ">STAGE MAP</div>
+          <div class="panel-title-actions">
+            <button id="btnLang" class="howto-btn" data-ja="ENGLISH">日本語</button>
+            <button id="btnHowToPlayMap" class="howto-btn" data-ja="遊び方">HOW TO PLAY</button>
+          </div>
         </div>
-        <p class="board-hint">TAP A STAGE TO LOAD IT. DASHED AMBER BRANCHES ARE OPTIONAL BONUS PUZZLES.</p>
+        <p class="board-hint" data-ja="ステージをタップして開始。オレンジの点線の枝は、挑戦してもしなくてもいいボーナス問題。">TAP A STAGE TO LOAD IT. DASHED AMBER BRANCHES ARE OPTIONAL BONUS PUZZLES.</p>
         <div class="stagemap-scroll">
           <svg id="stageTree" class="stage-tree" xmlns="http://www.w3.org/2000/svg"></svg>
         </div>
       </section>
 
       <section class="panel controls-panel">
-        <div class="panel-title">// SETTINGS</div>
+        <div class="panel-title" data-ja="設定">SETTINGS</div>
         <div class="controls-row">
           <div class="field">
-            <label for="levelSelect">LEVEL</label>
+            <label for="levelSelect" data-ja="ステージ">LEVEL</label>
             <select id="levelSelect"></select>
           </div>
           <div class="field" id="diffGroup">
-            <label for="diffSelect">DIFFICULTY</label>
+            <label for="diffSelect" data-ja="難易度">DIFFICULTY</label>
             <select id="diffSelect">
-              <option value="easy">EASY</option>
-              <option value="medium" selected>MEDIUM</option>
-              <option value="hard">HARD</option>
-              <option value="expert">EXPERT</option>
+              <option value="easy" data-ja="かんたん">EASY</option>
+              <option value="medium" selected data-ja="ふつう">MEDIUM</option>
+              <option value="hard" data-ja="むずかしい">HARD</option>
+              <option value="expert" data-ja="超むずかしい">EXPERT</option>
             </select>
           </div>
           <div class="toggle-field">
-            <label>REVISIT</label>
+            <label data-ja="再訪">REVISIT</label>
             <label class="toggle">
               <input type="checkbox" id="chkRevisit" />
               <span class="toggle-track"><span class="toggle-thumb"></span></span>
-              can revisit
+              <span data-ja="同じ点にもう一度行ける">can revisit</span>
             </label>
           </div>
         </div>
@@ -651,22 +658,22 @@ button.ghost:hover:not(:disabled) { background: rgba(255, 180, 84, 0.08); border
       </section>
 
       <section class="panel info-panel">
-        <div class="panel-title">// CURRENT STAGE</div>
+        <div class="panel-title" data-ja="現在のステージ">CURRENT STAGE</div>
         <dl class="info-list">
-          <div><dt>STAGE</dt><dd id="infoStageName">-</dd></div>
-          <div><dt>CLEAR COND.</dt><dd id="infoCond">-</dd></div>
-          <div><dt>OPTIMAL PATH</dt><dd id="infoOptimal">-</dd></div>
+          <div><dt data-ja="ステージ">STAGE</dt><dd id="infoStageName">-</dd></div>
+          <div><dt data-ja="クリア条件">CLEAR COND.</dt><dd id="infoCond">-</dd></div>
+          <div><dt data-ja="最短手数">OPTIMAL PATH</dt><dd id="infoOptimal">-</dd></div>
         </dl>
       </section>
     </section>
 
     <section class="view" id="viewBoard" hidden>
       <section class="panel board-panel">
-        <div class="panel-title">// BOARD</div>
+        <div class="panel-title" data-ja="盤面">BOARD</div>
         <div class="board-actions-row">
-          <button id="btnBackToMap">&larr; MAP</button>
-          <button id="btnUndo" disabled>UNDO</button>
-          <button id="btnReset">RESET</button>
+          <button id="btnBackToMap" data-ja="&larr; マップ">&larr; MAP</button>
+          <button id="btnUndo" disabled data-ja="1手戻す">UNDO</button>
+          <button id="btnReset" data-ja="リセット">RESET</button>
         </div>
         <div class="board-stage">
           <svg id="boardSvg" class="board-svg" xmlns="http://www.w3.org/2000/svg"></svg>
@@ -678,9 +685,9 @@ button.ghost:hover:not(:disabled) { background: rgba(255, 180, 84, 0.08); border
             </div>
           </div>
         </div>
-        <p class="board-hint">CLICK A LIT NODE TO WALK. ARRIVAL FLIPS ALL INCIDENT EDGES.</p>
+        <p class="board-hint" data-ja="光っている点をタップして移動。着いた点につながる辺は、すべてオン/オフが反転する。">CLICK A LIT NODE TO WALK. ARRIVAL FLIPS ALL INCIDENT EDGES.</p>
         <p class="board-status-line" id="boardStatus">IN PROGRESS</p>
-        <button id="btnSkip" class="ghost">STUCK? SKIP THIS STAGE &rarr;</button>
+        <button id="btnSkip" class="ghost" data-ja="詰まった? このステージをスキップ &rarr;">STUCK? SKIP THIS STAGE &rarr;</button>
       </section>
     </section>
   </main>
@@ -688,985 +695,39 @@ button.ghost:hover:not(:disabled) { background: rgba(255, 180, 84, 0.08); border
   </div>
 
   <dialog id="rulesDialog" class="rules-dialog">
-    <div class="panel-title">// HOW TO PLAY</div>
+    <div class="panel-title" data-ja="遊び方">HOW TO PLAY</div>
 
-    <p class="rules-p"><strong>THE ONE RULE:</strong> every time you arrive at a node, <em>every</em> edge touching that node flips &mdash; walkable (solid green) becomes blocked (dashed grey), and blocked becomes walkable.</p>
+    <p class="rules-p" data-ja="&lt;strong&gt;ルールはひとつ:&lt;/strong&gt; 点に着くたびに、その点につながる&lt;em&gt;すべての&lt;/em&gt;辺が反転する。通れる辺(緑の実線)は通れなく(灰色の点線)なり、通れない辺は通れるようになる。"><strong>THE ONE RULE:</strong> every time you arrive at a node, <em>every</em> edge touching that node flips &mdash; walkable (solid green) becomes blocked (dashed grey), and blocked becomes walkable.</p>
 
     <div class="rules-demo" id="rulesDemo">
       <svg id="rulesDemoSvg" viewBox="0 0 220 90" xmlns="http://www.w3.org/2000/svg"></svg>
       <p class="rules-demo-caption">tap the lit node to see it flip</p>
     </div>
 
-    <p class="rules-p">You can only step along a <strong>solid</strong> edge. Landing on a node immediately rewires it, so the path you just walked in on is usually gone behind you.</p>
+    <p class="rules-p" data-ja="進めるのは&lt;strong&gt;実線&lt;/strong&gt;の辺だけ。着いた瞬間にその点の辺が組み変わるので、たいてい今通ってきた道は後ろで消える。">You can only step along a <strong>solid</strong> edge. Landing on a node immediately rewires it, so the path you just walked in on is usually gone behind you.</p>
 
     <dl class="info-list">
-      <div><dt>VISIT_ALL</dt><dd>touch every node once</dd></div>
-      <div><dt>CAN REVISIT</dt><dd>off = each node once (NP-complete); on = anything goes (open problem!)</dd></div>
-      <div><dt>STUCK?</dt><dd>UNDO, RESET, or SKIP the stage</dd></div>
+      <div><dt>VISIT_ALL</dt><dd data-ja="すべての点を1回ずつ通る">touch every node once</dd></div>
+      <div><dt data-ja="再訪">CAN REVISIT</dt><dd data-ja="オフ = 各点1回まで(NP完全)/ オン = 何度でも(計算量は未解決!)">off = each node once (NP-complete); on = anything goes (open problem!)</dd></div>
+      <div><dt data-ja="詰まったら">STUCK?</dt><dd data-ja="1手戻す・リセット・スキップ">UNDO, RESET, or SKIP the stage</dd></div>
     </dl>
 
-    <button id="btnCloseRules" class="primary full">GOT IT</button>
+    <button id="btnCloseRules" class="primary full" data-ja="わかった">GOT IT</button>
   </dialog>
 </div>
 
 <script>
-const PRESETS_GOAL = [{"name":"Level 1","vertices":{"s":{"x":90,"y":330,"label":"s","role":"start"},"v2":{"x":90,"y":570,"label":"2","role":null},"v3":{"x":500,"y":450,"label":"1","role":null},"t":{"x":910,"y":450,"label":"t","role":"goal"}},"edges":[["s","v3",1],["v2","v3",1],["v3","t",0],["s","v2",0]],"start":"s","goal":"t","_optimal":2},{"name":"Level 2","vertices":{"t":{"x":90,"y":330,"label":"t","role":"goal"},"v2":{"x":90,"y":570,"label":"2","role":null},"v3":{"x":363,"y":450,"label":"1","role":null},"s":{"x":637,"y":450,"label":"s","role":"start"},"v5":{"x":910,"y":450,"label":"1","role":null}},"edges":[["t","v3",0],["v2","v3",1],["v3","s",1],["s","v5",0]],"start":"s","goal":"t","_optimal":2},{"name":"Level 3","vertices":{"s":{"x":90,"y":450,"label":"s","role":"start"},"v2":{"x":363,"y":330,"label":"1","role":null},"v3":{"x":363,"y":570,"label":"2","role":null},"v4":{"x":637,"y":450,"label":"1","role":null},"t":{"x":910,"y":330,"label":"t","role":"goal"},"v6":{"x":910,"y":570,"label":"2","role":null}},"edges":[["s","v2",1],["s","v3",1],["v2","v4",0],["v3","v4",1],["v4","t",0],["v4","v6",0],["t","v6",0]],"start":"s","goal":"t","_optimal":3},{"name":"Level 4","vertices":{"s":{"x":90,"y":450,"label":"s","role":"start"},"v2":{"x":363,"y":330,"label":"1","role":null},"v3":{"x":363,"y":570,"label":"2","role":null},"v4":{"x":637,"y":450,"label":"1","role":null},"v5":{"x":910,"y":330,"label":"1","role":null},"t":{"x":910,"y":570,"label":"t","role":"goal"}},"edges":[["s","v2",1],["s","v3",1],["v2","v4",0],["v3","v4",1],["v4","v5",1],["v4","t",0],["v2","v3",1],["v5","t",0]],"start":"s","goal":"t","_optimal":3},{"name":"Level 5","vertices":{"v1":{"x":90,"y":270,"label":"1","role":null},"t":{"x":90,"y":450,"label":"t","role":"goal"},"v3":{"x":90,"y":630,"label":"3","role":null},"v4":{"x":500,"y":270,"label":"1","role":null},"v5":{"x":500,"y":450,"label":"2","role":null},"v6":{"x":500,"y":630,"label":"3","role":null},"s":{"x":910,"y":330,"label":"s","role":"start"},"v8":{"x":910,"y":570,"label":"2","role":null}},"edges":[["v1","v4",0],["v1","v5",0],["v1","v6",1],["t","v6",0],["v3","v6",0],["v4","s",0],["v5","s",1],["v6","s",0],["v6","v8",0],["v1","t",0],["t","v3",1],["v5","v6",1],["s","v8",0]],"start":"s","goal":"t","_optimal":3},{"name":"Level 6","vertices":{"t":{"x":90,"y":330,"label":"t","role":"goal"},"v2":{"x":90,"y":570,"label":"2","role":null},"v3":{"x":363,"y":270,"label":"1","role":null},"v4":{"x":363,"y":450,"label":"2","role":null},"v5":{"x":363,"y":630,"label":"3","role":null},"v6":{"x":637,"y":330,"label":"1","role":null},"v7":{"x":637,"y":570,"label":"2","role":null},"s":{"x":910,"y":330,"label":"s","role":"start"},"v9":{"x":910,"y":570,"label":"2","role":null}},"edges":[["t","v3",1],["t","v4",0],["t","v5",1],["v2","v5",1],["v3","v6",0],["v4","v6",1],["v4","v7",0],["v5","v7",1],["v6","s",0],["v7","s",1],["v7","v9",0],["t","v2",1]],"start":"s","goal":"t","_optimal":3},{"name":"Level 7","vertices":{"v1":{"x":90,"y":270,"label":"1","role":null},"t":{"x":90,"y":450,"label":"t","role":"goal"},"v3":{"x":90,"y":630,"label":"3","role":null},"v4":{"x":295,"y":330,"label":"1","role":null},"v5":{"x":295,"y":570,"label":"2","role":null},"v6":{"x":500,"y":450,"label":"1","role":null},"v7":{"x":705,"y":330,"label":"1","role":null},"v8":{"x":705,"y":570,"label":"2","role":null},"s":{"x":910,"y":330,"label":"s","role":"start"},"v10":{"x":910,"y":570,"label":"2","role":null}},"edges":[["v1","v4",0],["v1","v5",1],["t","v5",0],["v3","v5",1],["v4","v6",0],["v5","v6",0],["v6","v7",0],["v6","v8",1],["v7","s",1],["v7","v10",0],["v8","v10",0],["t","v3",0],["v4","v5",1],["v7","v8",1],["s","v10",0]],"start":"s","goal":"t","_optimal":4},{"name":"Level 8","vertices":{"t":{"x":90,"y":270,"label":"t","role":"goal"},"v2":{"x":90,"y":450,"label":"2","role":null},"v3":{"x":90,"y":630,"label":"3","role":null},"v4":{"x":500,"y":270,"label":"1","role":null},"v5":{"x":500,"y":450,"label":"2","role":null},"v6":{"x":500,"y":630,"label":"3","role":null},"v7":{"x":910,"y":270,"label":"1","role":null},"v8":{"x":910,"y":450,"label":"2","role":null},"s":{"x":910,"y":630,"label":"s","role":"start"}},"edges":[["t","v4",0],["v2","v4",0],["v3","v4",0],["v3","v5",1],["v3","v6",1],["v4","v7",0],["v4","v8",0],["v5","v8",1],["v6","v8",0],["v6","s",1],["v7","v8",0]],"start":"s","goal":"t","_optimal":4},{"name":"Level 9","vertices":{"v1":{"x":90,"y":270,"label":"1","role":null},"v2":{"x":90,"y":450,"label":"2","role":null},"s":{"x":90,"y":630,"label":"s","role":"start"},"v4":{"x":363,"y":270,"label":"1","role":null},"v5":{"x":363,"y":450,"label":"2","role":null},"v6":{"x":363,"y":630,"label":"3","role":null},"v7":{"x":637,"y":450,"label":"1","role":null},"t":{"x":910,"y":270,"label":"t","role":"goal"},"v9":{"x":910,"y":450,"label":"2","role":null},"v10":{"x":910,"y":630,"label":"3","role":null}},"edges":[["v1","v4",0],["v2","v4",0],["s","v4",1],["s","v5",1],["s","v6",1],["v4","v7",1],["v5","v7",0],["v6","v7",0],["v7","t",0],["v7","v9",0],["v7","v10",1],["v2","s",0],["t","v9",0]],"start":"s","goal":"t","_optimal":3},{"name":"Level 10","vertices":{"v1":{"x":90,"y":270,"label":"1","role":null},"s":{"x":90,"y":450,"label":"s","role":"start"},"v3":{"x":90,"y":630,"label":"3","role":null},"v4":{"x":363,"y":270,"label":"1","role":null},"v5":{"x":363,"y":450,"label":"2","role":null},"v6":{"x":363,"y":630,"label":"3","role":null},"v7":{"x":637,"y":270,"label":"1","role":null},"v8":{"x":637,"y":450,"label":"2","role":null},"v9":{"x":637,"y":630,"label":"3","role":null},"v10":{"x":910,"y":270,"label":"1","role":null},"v11":{"x":910,"y":450,"label":"2","role":null},"t":{"x":910,"y":630,"label":"t","role":"goal"}},"edges":[["v1","v4",1],["v1","v5",0],["s","v5",0],["v3","v5",0],["v3","v6",1],["v1","v6",0],["v4","v7",1],["v5","v7",1],["v6","v7",0],["v6","v8",0],["v6","v9",0],["v7","v10",1],["v8","v10",0],["v8","v11",1],["v9","v11",0],["v9","t",0],["s","v3",1],["v4","v5",0],["v7","v8",1],["v10","v11",0]],"start":"s","goal":"t","_optimal":6},{"name":"Level 11","vertices":{"v1":{"x":90,"y":330,"label":"1","role":null},"v2":{"x":90,"y":570,"label":"2","role":null},"v3":{"x":295,"y":270,"label":"1","role":null},"v4":{"x":295,"y":450,"label":"2","role":null},"s":{"x":295,"y":630,"label":"s","role":"start"},"v6":{"x":500,"y":330,"label":"1","role":null},"v7":{"x":500,"y":570,"label":"2","role":null},"v8":{"x":705,"y":270,"label":"1","role":null},"v9":{"x":705,"y":450,"label":"2","role":null},"v10":{"x":705,"y":630,"label":"3","role":null},"t":{"x":910,"y":330,"label":"t","role":"goal"},"v12":{"x":910,"y":570,"label":"2","role":null}},"edges":[["v1","v3",0],["v1","v4",1],["v1","s",0],["v2","s",0],["v3","v6",0],["v4","v6",0],["v4","v7",0],["s","v7",1],["v6","v8",1],["v6","v9",1],["v6","v10",1],["v7","v10",0],["v8","t",0],["v9","t",1],["v10","t",1],["v10","v12",0],["v8","v9",1],["t","v12",0]],"start":"s","goal":"t","_optimal":4},{"name":"Level 12","vertices":{"v1":{"x":90,"y":234,"label":"1","role":null},"v2":{"x":90,"y":378,"label":"2","role":null},"v3":{"x":90,"y":522,"label":"3","role":null},"t":{"x":90,"y":666,"label":"t","role":"goal"},"v5":{"x":295,"y":450,"label":"1","role":null},"v6":{"x":500,"y":270,"label":"1","role":null},"v7":{"x":500,"y":450,"label":"2","role":null},"v8":{"x":500,"y":630,"label":"3","role":null},"v9":{"x":705,"y":450,"label":"1","role":null},"v10":{"x":910,"y":234,"label":"1","role":null},"v11":{"x":910,"y":378,"label":"2","role":null},"s":{"x":910,"y":522,"label":"s","role":"start"},"v13":{"x":910,"y":666,"label":"4","role":null}},"edges":[["v1","v5",0],["v2","v5",1],["v3","v5",0],["t","v5",0],["v5","v6",0],["v5","v7",1],["v5","v8",0],["v6","v9",0],["v7","v9",1],["v8","v9",0],["v9","v10",1],["v9","v11",1],["v9","s",1],["v9","v13",0],["v11","s",0],["s","v13",1]],"start":"s","goal":"t","_optimal":4},{"name":"Level 13","vertices":{"v1":{"x":90,"y":330,"label":"1","role":null},"t":{"x":90,"y":570,"label":"t","role":"goal"},"v3":{"x":295,"y":234,"label":"1","role":null},"v4":{"x":295,"y":378,"label":"2","role":null},"v5":{"x":295,"y":522,"label":"3","role":null},"v6":{"x":295,"y":666,"label":"4","role":null},"v7":{"x":500,"y":270,"label":"1","role":null},"v8":{"x":500,"y":450,"label":"2","role":null},"v9":{"x":500,"y":630,"label":"3","role":null},"v10":{"x":705,"y":270,"label":"1","role":null},"v11":{"x":705,"y":450,"label":"2","role":null},"v12":{"x":705,"y":630,"label":"3","role":null},"s":{"x":910,"y":450,"label":"s","role":"start"}},"edges":[["v1","v3",0],["t","v3",0],["t","v4",1],["t","v5",0],["t","v6",0],["v3","v7",0],["v4","v7",1],["v4","v8",1],["v5","v8",0],["v5","v9",0],["v6","v9",1],["v6","v7",0],["v7","v10",1],["v7","v11",1],["v7","v12",0],["v8","v12",1],["v9","v12",0],["v10","s",1],["v11","s",0],["v12","s",1],["v5","v6",1]],"start":"s","goal":"t","_optimal":4},{"name":"Level 14","vertices":{"v1":{"x":90,"y":270,"label":"1","role":null},"s":{"x":90,"y":450,"label":"s","role":"start"},"v3":{"x":90,"y":630,"label":"3","role":null},"v4":{"x":295,"y":270,"label":"1","role":null},"v5":{"x":295,"y":450,"label":"2","role":null},"v6":{"x":295,"y":630,"label":"3","role":null},"v7":{"x":500,"y":450,"label":"1","role":null},"v8":{"x":705,"y":270,"label":"1","role":null},"v9":{"x":705,"y":450,"label":"2","role":null},"v10":{"x":705,"y":630,"label":"3","role":null},"v11":{"x":910,"y":234,"label":"1","role":null},"v12":{"x":910,"y":378,"label":"2","role":null},"v13":{"x":910,"y":522,"label":"3","role":null},"t":{"x":910,"y":666,"label":"t","role":"goal"}},"edges":[["v1","v4",0],["v1","v5",1],["s","v5",1],["s","v6",0],["v3","v6",1],["v4","v7",0],["v5","v7",0],["v6","v7",0],["v7","v8",0],["v7","v9",1],["v7","v10",0],["v8","v11",1],["v9","v11",0],["v9","v12",0],["v10","v12",0],["v10","v13",0],["v10","t",1],["v1","s",1],["v4","v5",0],["v8","v9",0],["v13","t",0]],"start":"s","goal":"t","_optimal":5},{"name":"Level 15","vertices":{"v1":{"x":90,"y":234,"label":"1","role":null},"v2":{"x":90,"y":378,"label":"2","role":null},"s":{"x":90,"y":522,"label":"s","role":"start"},"v4":{"x":90,"y":666,"label":"4","role":null},"v5":{"x":295,"y":234,"label":"1","role":null},"v6":{"x":295,"y":378,"label":"2","role":null},"v7":{"x":295,"y":522,"label":"3","role":null},"v8":{"x":295,"y":666,"label":"4","role":null},"v9":{"x":500,"y":330,"label":"1","role":null},"v10":{"x":500,"y":570,"label":"2","role":null},"v11":{"x":705,"y":270,"label":"1","role":null},"v12":{"x":705,"y":450,"label":"2","role":null},"v13":{"x":705,"y":630,"label":"3","role":null},"t":{"x":910,"y":270,"label":"t","role":"goal"},"v15":{"x":910,"y":450,"label":"2","role":null},"v16":{"x":910,"y":630,"label":"3","role":null}},"edges":[["v1","v5",1],["v1","v6",0],["v2","v6",1],["s","v6",0],["v4","v6",1],["v4","v7",1],["v4","v8",0],["v2","v5",0],["v5","v9",0],["v6","v9",1],["v7","v9",0],["v7","v10",0],["v8","v10",0],["v8","v9",1],["v9","v11",1],["v10","v11",0],["v10","v12",0],["v10","v13",0],["v11","t",0],["v11","v15",0],["v11","v16",0],["v12","v16",1],["v13","v16",0],["v1","v2",1],["v2","s",1],["v5","v6",0],["v6","v7",0],["v7","v8",0],["v11","v12",1]],"start":"s","goal":"t","_optimal":7},{"name":"Level 16","vertices":{"v1":{"x":90,"y":234,"label":"1","role":null},"t":{"x":90,"y":378,"label":"t","role":"goal"},"v3":{"x":90,"y":522,"label":"3","role":null},"v4":{"x":90,"y":666,"label":"4","role":null},"v5":{"x":295,"y":234,"label":"1","role":null},"v6":{"x":295,"y":378,"label":"2","role":null},"v7":{"x":295,"y":522,"label":"3","role":null},"v8":{"x":295,"y":666,"label":"4","role":null},"v9":{"x":500,"y":270,"label":"1","role":null},"v10":{"x":500,"y":450,"label":"2","role":null},"v11":{"x":500,"y":630,"label":"3","role":null},"v12":{"x":705,"y":270,"label":"1","role":null},"v13":{"x":705,"y":450,"label":"2","role":null},"v14":{"x":705,"y":630,"label":"3","role":null},"s":{"x":910,"y":330,"label":"s","role":"start"},"v16":{"x":910,"y":570,"label":"2","role":null}},"edges":[["v1","v5",0],["v1","v6",1],["t","v6",0],["t","v7",1],["v3","v7",1],["v3","v8",0],["v4","v8",1],["v3","v6",1],["v5","v9",0],["v6","v9",1],["v7","v9",0],["v7","v10",0],["v7","v11",1],["v8","v11",1],["v6","v11",0],["v9","v12",0],["v10","v12",1],["v10","v13",0],["v11","v13",0],["v11","v14",1],["v12","s",1],["v12","v16",0],["v13","v16",0],["v14","v16",1],["v10","v11",0],["v12","v13",1],["v13","v14",0]],"start":"s","goal":"t","_optimal":6},{"name":"Level 17","vertices":{"v1":{"x":90,"y":330,"label":"1","role":null},"s":{"x":90,"y":570,"label":"s","role":"start"},"v3":{"x":254,"y":330,"label":"1","role":null},"v4":{"x":254,"y":570,"label":"2","role":null},"v5":{"x":418,"y":234,"label":"1","role":null},"v6":{"x":418,"y":378,"label":"2","role":null},"v7":{"x":418,"y":522,"label":"3","role":null},"v8":{"x":418,"y":666,"label":"4","role":null},"v9":{"x":582,"y":330,"label":"1","role":null},"v10":{"x":582,"y":570,"label":"2","role":null},"v11":{"x":746,"y":234,"label":"1","role":null},"v12":{"x":746,"y":378,"label":"2","role":null},"v13":{"x":746,"y":522,"label":"3","role":null},"v14":{"x":746,"y":666,"label":"4","role":null},"v15":{"x":910,"y":270,"label":"1","role":null},"t":{"x":910,"y":450,"label":"t","role":"goal"},"v17":{"x":910,"y":630,"label":"3","role":null}},"edges":[["v1","v3",0],["v1","v4",0],["s","v4",1],["v3","v5",0],["v4","v5",1],["v4","v6",0],["v4","v7",0],["v4","v8",1],["v3","v8",0],["v5","v9",1],["v6","v9",0],["v6","v10",0],["v7","v10",0],["v8","v10",0],["v9","v11",0],["v9","v12",0],["v9","v13",1],["v9","v14",0],["v10","v14",0],["v11","v15",0],["v12","v15",1],["v13","v15",0],["v14","v15",0],["v14","t",1],["v14","v17",0],["v1","s",0],["v3","v4",0],["v9","v10",0],["v15","t",0],["t","v17",1]],"start":"s","goal":"t","_optimal":6},{"name":"Level 18","vertices":{"v1":{"x":90,"y":270,"label":"1","role":null},"s":{"x":90,"y":450,"label":"s","role":"start"},"v3":{"x":90,"y":630,"label":"3","role":null},"v4":{"x":254,"y":330,"label":"1","role":null},"v5":{"x":254,"y":570,"label":"2","role":null},"v6":{"x":418,"y":450,"label":"1","role":null},"v7":{"x":582,"y":234,"label":"1","role":null},"v8":{"x":582,"y":378,"label":"2","role":null},"v9":{"x":582,"y":522,"label":"3","role":null},"v10":{"x":582,"y":666,"label":"4","role":null},"v11":{"x":746,"y":234,"label":"1","role":null},"v12":{"x":746,"y":378,"label":"2","role":null},"v13":{"x":746,"y":522,"label":"3","role":null},"v14":{"x":746,"y":666,"label":"4","role":null},"v15":{"x":910,"y":270,"label":"1","role":null},"v16":{"x":910,"y":450,"label":"2","role":null},"t":{"x":910,"y":630,"label":"t","role":"goal"}},"edges":[["v1","v4",0],["v1","v5",0],["s","v5",1],["v3","v5",1],["v4","v6",0],["v5","v6",0],["v6","v7",1],["v6","v8",0],["v6","v9",1],["v6","v10",1],["v7","v11",1],["v7","v12",1],["v7","v13",1],["v8","v13",1],["v8","v14",0],["v9","v14",1],["v10","v14",0],["v11","v15",0],["v11","v16",1],["v11","t",1],["v12","t",0],["v13","t",0],["v14","t",0],["v12","v15",0],["v14","v15",1],["s","v3",0],["v9","v10",1],["v11","v12",0],["v13","v14",1],["v15","v16",0]],"start":"s","goal":"t","_optimal":5},{"name":"Level 19","vertices":{"s":{"x":90,"y":234,"label":"s","role":"start"},"v2":{"x":90,"y":378,"label":"2","role":null},"v3":{"x":90,"y":522,"label":"3","role":null},"v4":{"x":90,"y":666,"label":"4","role":null},"v5":{"x":295,"y":234,"label":"1","role":null},"v6":{"x":295,"y":378,"label":"2","role":null},"v7":{"x":295,"y":522,"label":"3","role":null},"v8":{"x":295,"y":666,"label":"4","role":null},"v9":{"x":500,"y":270,"label":"1","role":null},"v10":{"x":500,"y":450,"label":"2","role":null},"v11":{"x":500,"y":630,"label":"3","role":null},"v12":{"x":705,"y":270,"label":"1","role":null},"v13":{"x":705,"y":450,"label":"2","role":null},"v14":{"x":705,"y":630,"label":"3","role":null},"v15":{"x":910,"y":234,"label":"1","role":null},"t":{"x":910,"y":378,"label":"t","role":"goal"},"v17":{"x":910,"y":522,"label":"3","role":null},"v18":{"x":910,"y":666,"label":"4","role":null}},"edges":[["s","v5",1],["v2","v5",0],["v2","v6",0],["v2","v7",0],["v2","v8",1],["v3","v8",1],["v4","v8",0],["v5","v9",0],["v5","v10",1],["v6","v10",0],["v6","v11",1],["v7","v11",0],["v8","v11",0],["v8","v10",1],["v9","v12",1],["v9","v13",1],["v10","v13",0],["v10","v14",1],["v11","v14",0],["v11","v13",0],["v12","v15",1],["v12","t",0],["v13","t",0],["v14","t",1],["v14","v17",1],["v14","v18",0],["v6","v7",1],["v10","v11",1],["v12","v13",0],["t","v17",1],["v17","v18",0]],"start":"s","goal":"t","_optimal":6},{"name":"Level 20","vertices":{"t":{"x":90,"y":234,"label":"t","role":"goal"},"v2":{"x":90,"y":378,"label":"2","role":null},"v3":{"x":90,"y":522,"label":"3","role":null},"v4":{"x":90,"y":666,"label":"4","role":null},"v5":{"x":295,"y":450,"label":"1","role":null},"v6":{"x":500,"y":210,"label":"1","role":null},"v7":{"x":500,"y":330,"label":"2","role":null},"v8":{"x":500,"y":450,"label":"3","role":null},"v9":{"x":500,"y":570,"label":"4","role":null},"v10":{"x":500,"y":690,"label":"5","role":null},"v11":{"x":705,"y":234,"label":"1","role":null},"v12":{"x":705,"y":378,"label":"2","role":null},"v13":{"x":705,"y":522,"label":"3","role":null},"v14":{"x":705,"y":666,"label":"4","role":null},"v15":{"x":910,"y":210,"label":"1","role":null},"s":{"x":910,"y":330,"label":"s","role":"start"},"v17":{"x":910,"y":450,"label":"3","role":null},"v18":{"x":910,"y":570,"label":"4","role":null},"v19":{"x":910,"y":690,"label":"5","role":null}},"edges":[["t","v5",1],["v2","v5",0],["v3","v5",1],["v4","v5",1],["v5","v6",0],["v5","v7",0],["v5","v8",1],["v5","v9",0],["v5","v10",1],["v6","v11",1],["v7","v11",0],["v8","v11",1],["v8","v12",0],["v8","v13",0],["v8","v14",1],["v9","v14",0],["v10","v14",1],["v11","v15",0],["v12","v15",0],["v12","s",1],["v12","v17",1],["v12","v18",0],["v12","v19",0],["v13","v19",0],["v14","v19",0],["t","v2",0],["v6","v7",1],["v8","v9",0],["v11","v12",0],["v13","v14",0],["s","v17",1]],"start":"s","goal":"t","_optimal":6},{"name":"Level 21","vertices":{"v1":{"x":90,"y":270,"label":"1","role":null},"t":{"x":90,"y":450,"label":"t","role":"goal"},"v3":{"x":90,"y":630,"label":"3","role":null},"v4":{"x":295,"y":210,"label":"1","role":null},"v5":{"x":295,"y":330,"label":"2","role":null},"v6":{"x":295,"y":450,"label":"3","role":null},"v7":{"x":295,"y":570,"label":"4","role":null},"v8":{"x":295,"y":690,"label":"5","role":null},"v9":{"x":500,"y":234,"label":"1","role":null},"v10":{"x":500,"y":378,"label":"2","role":null},"s":{"x":500,"y":522,"label":"s","role":"start"},"v12":{"x":500,"y":666,"label":"4","role":null},"v13":{"x":705,"y":234,"label":"1","role":null},"v14":{"x":705,"y":378,"label":"2","role":null},"v15":{"x":705,"y":522,"label":"3","role":null},"v16":{"x":705,"y":666,"label":"4","role":null},"v17":{"x":910,"y":234,"label":"1","role":null},"v18":{"x":910,"y":378,"label":"2","role":null},"v19":{"x":910,"y":522,"label":"3","role":null},"v20":{"x":910,"y":666,"label":"4","role":null}},"edges":[["v1","v4",1],["t","v4",0],["v3","v4",0],["v3","v5",0],["v3","v6",0],["v3","v7",0],["v3","v8",1],["v4","v9",0],["v5","v9",1],["v5","v10",1],["v5","s",0],["v6","s",1],["v6","v12",0],["v7","v12",1],["v8","v12",0],["v7","s",0],["v8","v10",1],["v9","v13",1],["v9","v14",0],["v10","v14",1],["s","v14",1],["s","v15",1],["v12","v15",1],["v12","v16",0],["v9","v16",0],["v13","v17",1],["v13","v18",0],["v13","v19",1],["v14","v19",0],["v15","v19",1],["v16","v19",0],["v16","v20",0],["v6","v7",1],["v9","v10",0],["v14","v15",1],["v18","v19",1]],"start":"s","goal":"t","_optimal":6},{"name":"Level 22","vertices":{"s":{"x":90,"y":210,"label":"s","role":"start"},"v2":{"x":90,"y":330,"label":"2","role":null},"v3":{"x":90,"y":450,"label":"3","role":null},"v4":{"x":90,"y":570,"label":"4","role":null},"v5":{"x":90,"y":690,"label":"5","role":null},"v6":{"x":254,"y":330,"label":"1","role":null},"v7":{"x":254,"y":570,"label":"2","role":null},"v8":{"x":418,"y":270,"label":"1","role":null},"v9":{"x":418,"y":450,"label":"2","role":null},"v10":{"x":418,"y":630,"label":"3","role":null},"v11":{"x":582,"y":234,"label":"1","role":null},"v12":{"x":582,"y":378,"label":"2","role":null},"v13":{"x":582,"y":522,"label":"3","role":null},"v14":{"x":582,"y":666,"label":"4","role":null},"v15":{"x":746,"y":270,"label":"1","role":null},"v16":{"x":746,"y":450,"label":"2","role":null},"v17":{"x":746,"y":630,"label":"3","role":null},"v18":{"x":910,"y":234,"label":"1","role":null},"v19":{"x":910,"y":378,"label":"2","role":null},"v20":{"x":910,"y":522,"label":"3","role":null},"t":{"x":910,"y":666,"label":"t","role":"goal"}},"edges":[["s","v6",1],["v2","v6",0],["v3","v6",0],["v4","v6",0],["v4","v7",0],["v5","v7",0],["v6","v8",0],["v7","v8",1],["v7","v9",1],["v7","v10",1],["v8","v11",0],["v9","v11",0],["v9","v12",1],["v9","v13",0],["v10","v13",1],["v10","v14",1],["v11","v15",0],["v11","v16",1],["v12","v16",1],["v12","v17",0],["v13","v17",0],["v14","v17",0],["v15","v18",0],["v15","v19",0],["v15","v20",0],["v15","t",1],["v16","t",0],["v17","t",0],["v16","v20",1],["v8","v9",0],["v12","v13",0],["v19","v20",1],["v20","t",1]],"start":"s","goal":"t","_optimal":7},{"name":"Level 23","vertices":{"v1":{"x":90,"y":210,"label":"1","role":null},"v2":{"x":90,"y":330,"label":"2","role":null},"v3":{"x":90,"y":450,"label":"3","role":null},"v4":{"x":90,"y":570,"label":"4","role":null},"v5":{"x":90,"y":690,"label":"5","role":null},"v6":{"x":295,"y":234,"label":"1","role":null},"v7":{"x":295,"y":378,"label":"2","role":null},"v8":{"x":295,"y":522,"label":"3","role":null},"v9":{"x":295,"y":666,"label":"4","role":null},"s":{"x":500,"y":210,"label":"s","role":"start"},"v11":{"x":500,"y":330,"label":"2","role":null},"v12":{"x":500,"y":450,"label":"3","role":null},"v13":{"x":500,"y":570,"label":"4","role":null},"v14":{"x":500,"y":690,"label":"5","role":null},"v15":{"x":705,"y":210,"label":"1","role":null},"v16":{"x":705,"y":330,"label":"2","role":null},"v17":{"x":705,"y":450,"label":"3","role":null},"v18":{"x":705,"y":570,"label":"4","role":null},"v19":{"x":705,"y":690,"label":"5","role":null},"t":{"x":910,"y":270,"label":"t","role":"goal"},"v21":{"x":910,"y":450,"label":"2","role":null},"v22":{"x":910,"y":630,"label":"3","role":null}},"edges":[["v1","v6",1],["v1","v7",0],["v1","v8",1],["v1","v9",0],["v2","v9",1],["v3","v9",1],["v4","v9",1],["v5","v9",1],["v6","s",0],["v6","v11",0],["v7","v11",0],["v7","v12",0],["v8","v12",0],["v8","v13",1],["v9","v13",1],["v9","v14",0],["v9","s",1],["s","v15",0],["s","v16",1],["v11","v16",0],["v12","v16",1],["v12","v17",1],["v13","v17",1],["v14","v17",0],["v14","v18",1],["v14","v19",1],["v12","v19",1],["v13","v15",1],["v15","t",1],["v15","v21",1],["v15","v22",1],["v16","v22",0],["v17","v22",1],["v18","v22",0],["v19","v22",1],["v18","t",0],["v1","v2",0],["v4","v5",1],["v7","v8",0],["v8","v9",0],["v11","v12",1],["v12","v13",1],["v15","v16",0],["v17","v18",1],["t","v21",1]],"start":"s","goal":"t","_optimal":4},{"name":"Level 24","vertices":{"v1":{"x":90,"y":210,"label":"1","role":null},"v2":{"x":90,"y":330,"label":"2","role":null},"t":{"x":90,"y":450,"label":"t","role":"goal"},"v4":{"x":90,"y":570,"label":"4","role":null},"v5":{"x":90,"y":690,"label":"5","role":null},"v6":{"x":254,"y":210,"label":"1","role":null},"v7":{"x":254,"y":330,"label":"2","role":null},"v8":{"x":254,"y":450,"label":"3","role":null},"v9":{"x":254,"y":570,"label":"4","role":null},"v10":{"x":254,"y":690,"label":"5","role":null},"v11":{"x":418,"y":270,"label":"1","role":null},"v12":{"x":418,"y":450,"label":"2","role":null},"v13":{"x":418,"y":630,"label":"3","role":null},"v14":{"x":582,"y":330,"label":"1","role":null},"v15":{"x":582,"y":570,"label":"2","role":null},"v16":{"x":746,"y":234,"label":"1","role":null},"v17":{"x":746,"y":378,"label":"2","role":null},"v18":{"x":746,"y":522,"label":"3","role":null},"v19":{"x":746,"y":666,"label":"4","role":null},"s":{"x":910,"y":270,"label":"s","role":"start"},"v21":{"x":910,"y":450,"label":"2","role":null},"v22":{"x":910,"y":630,"label":"3","role":null}},"edges":[["v1","v6",0],["v2","v6",0],["v2","v7",0],["v2","v8",0],["t","v8",0],["v4","v8",0],["v4","v9",0],["v4","v10",0],["v5","v10",1],["v1","v7",0],["v5","v7",1],["v6","v11",0],["v6","v12",0],["v7","v12",0],["v7","v13",0],["v8","v13",0],["v9","v13",0],["v10","v13",1],["v9","v11",0],["v11","v14",0],["v12","v14",1],["v13","v14",1],["v13","v15",0],["v14","v16",0],["v14","v17",1],["v14","v18",0],["v15","v18",1],["v15","v19",0],["v16","s",1],["v16","v21",1],["v16","v22",0],["v17","v22",1],["v18","v22",0],["v19","v22",0],["v2","t",0],["v6","v7",1],["v7","v8",1],["v8","v9",0],["v17","v18",0],["v18","v19",0],["s","v21",0]],"start":"s","goal":"t","_optimal":14},{"name":"Level 25","vertices":{"v1":{"x":90,"y":210,"label":"1","role":null},"v2":{"x":90,"y":330,"label":"2","role":null},"v3":{"x":90,"y":450,"label":"3","role":null},"v4":{"x":90,"y":570,"label":"4","role":null},"v5":{"x":90,"y":690,"label":"5","role":null},"v6":{"x":254,"y":330,"label":"1","role":null},"s":{"x":254,"y":570,"label":"s","role":"start"},"v8":{"x":418,"y":210,"label":"1","role":null},"v9":{"x":418,"y":330,"label":"2","role":null},"v10":{"x":418,"y":450,"label":"3","role":null},"v11":{"x":418,"y":570,"label":"4","role":null},"v12":{"x":418,"y":690,"label":"5","role":null},"v13":{"x":582,"y":234,"label":"1","role":null},"v14":{"x":582,"y":378,"label":"2","role":null},"v15":{"x":582,"y":522,"label":"3","role":null},"v16":{"x":582,"y":666,"label":"4","role":null},"v17":{"x":746,"y":330,"label":"1","role":null},"v18":{"x":746,"y":570,"label":"2","role":null},"v19":{"x":910,"y":210,"label":"1","role":null},"t":{"x":910,"y":330,"label":"t","role":"goal"},"v21":{"x":910,"y":450,"label":"3","role":null},"v22":{"x":910,"y":570,"label":"4","role":null},"v23":{"x":910,"y":690,"label":"5","role":null}},"edges":[["v1","v6",0],["v1","s",1],["v2","s",1],["v3","s",0],["v4","s",0],["v5","s",0],["v6","v8",0],["s","v8",0],["s","v9",1],["s","v10",0],["s","v11",0],["s","v12",0],["v8","v13",0],["v9","v13",1],["v9","v14",1],["v9","v15",0],["v10","v15",1],["v10","v16",1],["v11","v16",0],["v12","v16",1],["v9","v16",1],["v13","v17",0],["v13","v18",0],["v14","v18",0],["v15","v18",0],["v16","v18",1],["v17","v19",1],["v18","v19",0],["v18","t",0],["v18","v21",1],["v18","v22",0],["v18","v23",0],["v2","v3",1],["v4","v5",0],["v10","v11",0],["v13","v14",1],["v19","t",1],["t","v21",1],["v21","v22",0],["v22","v23",0]],"start":"s","goal":"t","_optimal":4},{"name":"Level 26","vertices":{"v1":{"x":90,"y":210,"label":"1","role":null},"t":{"x":90,"y":330,"label":"t","role":"goal"},"v3":{"x":90,"y":450,"label":"3","role":null},"v4":{"x":90,"y":570,"label":"4","role":null},"v5":{"x":90,"y":690,"label":"5","role":null},"v6":{"x":295,"y":210,"label":"1","role":null},"v7":{"x":295,"y":330,"label":"2","role":null},"v8":{"x":295,"y":450,"label":"3","role":null},"v9":{"x":295,"y":570,"label":"4","role":null},"v10":{"x":295,"y":690,"label":"5","role":null},"v11":{"x":500,"y":210,"label":"1","role":null},"v12":{"x":500,"y":330,"label":"2","role":null},"v13":{"x":500,"y":450,"label":"3","role":null},"s":{"x":500,"y":570,"label":"s","role":"start"},"v15":{"x":500,"y":690,"label":"5","role":null},"v16":{"x":705,"y":210,"label":"1","role":null},"v17":{"x":705,"y":330,"label":"2","role":null},"v18":{"x":705,"y":450,"label":"3","role":null},"v19":{"x":705,"y":570,"label":"4","role":null},"v20":{"x":705,"y":690,"label":"5","role":null},"v21":{"x":910,"y":270,"label":"1","role":null},"v22":{"x":910,"y":450,"label":"2","role":null},"v23":{"x":910,"y":630,"label":"3","role":null}},"edges":[["v1","v6",1],["v1","v7",0],["t","v7",1],["t","v8",0],["v3","v8",0],["v4","v8",1],["v5","v8",1],["v5","v9",1],["v5","v10",0],["t","v6",0],["v6","v11",1],["v7","v11",0],["v8","v11",0],["v8","v12",0],["v9","v12",1],["v10","v12",1],["v10","v13",1],["v10","s",0],["v10","v15",0],["v11","v16",0],["v12","v16",0],["v12","v17",0],["v13","v17",1],["s","v17",1],["s","v18",0],["v15","v18",0],["v15","v19",1],["v15","v20",0],["v16","v21",1],["v16","v22",1],["v17","v22",1],["v17","v23",1],["v18","v23",1],["v19","v23",0],["v20","v23",1],["v20","v22",1],["t","v3",0],["v8","v9",0],["v12","v13",1],["v16","v17",0],["v17","v18",1],["v19","v20",0],["v22","v23",0]],"start":"s","goal":"t","_optimal":6},{"name":"Level 27","vertices":{"v1":{"x":90,"y":210,"label":"1","role":null},"v2":{"x":90,"y":330,"label":"2","role":null},"t":{"x":90,"y":450,"label":"t","role":"goal"},"v4":{"x":90,"y":570,"label":"4","role":null},"v5":{"x":90,"y":690,"label":"5","role":null},"v6":{"x":295,"y":210,"label":"1","role":null},"v7":{"x":295,"y":330,"label":"2","role":null},"v8":{"x":295,"y":450,"label":"3","role":null},"v9":{"x":295,"y":570,"label":"4","role":null},"v10":{"x":295,"y":690,"label":"5","role":null},"v11":{"x":500,"y":210,"label":"1","role":null},"v12":{"x":500,"y":330,"label":"2","role":null},"v13":{"x":500,"y":450,"label":"3","role":null},"v14":{"x":500,"y":570,"label":"4","role":null},"v15":{"x":500,"y":690,"label":"5","role":null},"v16":{"x":705,"y":234,"label":"1","role":null},"s":{"x":705,"y":378,"label":"s","role":"start"},"v18":{"x":705,"y":522,"label":"3","role":null},"v19":{"x":705,"y":666,"label":"4","role":null},"v20":{"x":910,"y":210,"label":"1","role":null},"v21":{"x":910,"y":330,"label":"2","role":null},"v22":{"x":910,"y":450,"label":"3","role":null},"v23":{"x":910,"y":570,"label":"4","role":null},"v24":{"x":910,"y":690,"label":"5","role":null}},"edges":[["v1","v6",0],["v1","v7",0],["v1","v8",0],["v2","v8",0],["v2","v9",0],["t","v9",0],["v4","v9",1],["v5","v9",1],["v5","v10",1],["v6","v11",1],["v7","v11",0],["v8","v11",0],["v9","v11",1],["v10","v11",1],["v10","v12",0],["v10","v13",1],["v10","v14",1],["v10","v15",1],["v8","v13",1],["v9","v15",0],["v11","v16",1],["v12","v16",0],["v13","v16",0],["v13","s",0],["v14","s",0],["v15","s",0],["v15","v18",0],["v15","v19",1],["v15","v16",0],["v16","v20",0],["s","v20",1],["s","v21",0],["s","v22",0],["v18","v22",1],["v19","v22",1],["v19","v23",0],["v19","v24",0],["v16","v22",1],["t","v4",1],["v4","v5",0],["v7","v8",1],["v14","v15",0],["v16","s",1],["s","v18",0],["v21","v22",0],["v23","v24",0]],"start":"s","goal":"t","_optimal":4},{"name":"Level 28","vertices":{"v1":{"x":90,"y":210,"label":"1","role":null},"v2":{"x":90,"y":330,"label":"2","role":null},"t":{"x":90,"y":450,"label":"t","role":"goal"},"v4":{"x":90,"y":570,"label":"4","role":null},"v5":{"x":90,"y":690,"label":"5","role":null},"v6":{"x":295,"y":210,"label":"1","role":null},"v7":{"x":295,"y":330,"label":"2","role":null},"v8":{"x":295,"y":450,"label":"3","role":null},"v9":{"x":295,"y":570,"label":"4","role":null},"v10":{"x":295,"y":690,"label":"5","role":null},"v11":{"x":500,"y":210,"label":"1","role":null},"v12":{"x":500,"y":330,"label":"2","role":null},"v13":{"x":500,"y":450,"label":"3","role":null},"v14":{"x":500,"y":570,"label":"4","role":null},"v15":{"x":500,"y":690,"label":"5","role":null},"v16":{"x":705,"y":210,"label":"1","role":null},"v17":{"x":705,"y":330,"label":"2","role":null},"v18":{"x":705,"y":450,"label":"3","role":null},"v19":{"x":705,"y":570,"label":"4","role":null},"v20":{"x":705,"y":690,"label":"5","role":null},"v21":{"x":910,"y":210,"label":"1","role":null},"v22":{"x":910,"y":330,"label":"2","role":null},"v23":{"x":910,"y":450,"label":"3","role":null},"s":{"x":910,"y":570,"label":"s","role":"start"},"v25":{"x":910,"y":690,"label":"5","role":null}},"edges":[["v1","v6",0],["v2","v6",0],["v2","v7",0],["t","v7",0],["t","v8",0],["t","v9",1],["t","v10",1],["v4","v10",1],["v5","v10",1],["v6","v11",1],["v7","v11",0],["v7","v12",1],["v7","v13",1],["v8","v13",0],["v8","v14",0],["v8","v15",0],["v9","v15",0],["v10","v15",0],["v11","v16",0],["v11","v17",1],["v11","v18",1],["v11","v19",0],["v12","v19",1],["v13","v19",0],["v14","v19",0],["v15","v19",1],["v15","v20",1],["v15","v16",1],["v16","v21",0],["v16","v22",0],["v16","v23",1],["v17","v23",0],["v18","v23",0],["v18","s",0],["v19","s",1],["v20","s",1],["v20","v25",0],["v2","t",0],["v6","v7",1],["v13","v14",1],["v21","v22",1],["v23","s",0]],"start":"s","goal":"t","_optimal":4},{"name":"Level 29","vertices":{"t":{"x":90,"y":270,"label":"t","role":"goal"},"v2":{"x":90,"y":450,"label":"2","role":null},"v3":{"x":90,"y":630,"label":"3","role":null},"v4":{"x":254,"y":210,"label":"1","role":null},"v5":{"x":254,"y":330,"label":"2","role":null},"v6":{"x":254,"y":450,"label":"3","role":null},"v7":{"x":254,"y":570,"label":"4","role":null},"v8":{"x":254,"y":690,"label":"5","role":null},"v9":{"x":418,"y":210,"label":"1","role":null},"v10":{"x":418,"y":330,"label":"2","role":null},"v11":{"x":418,"y":450,"label":"3","role":null},"v12":{"x":418,"y":570,"label":"4","role":null},"v13":{"x":418,"y":690,"label":"5","role":null},"v14":{"x":582,"y":330,"label":"1","role":null},"v15":{"x":582,"y":570,"label":"2","role":null},"v16":{"x":746,"y":210,"label":"1","role":null},"v17":{"x":746,"y":330,"label":"2","role":null},"v18":{"x":746,"y":450,"label":"3","role":null},"v19":{"x":746,"y":570,"label":"4","role":null},"v20":{"x":746,"y":690,"label":"5","role":null},"s":{"x":910,"y":210,"label":"s","role":"start"},"v22":{"x":910,"y":330,"label":"2","role":null},"v23":{"x":910,"y":450,"label":"3","role":null},"v24":{"x":910,"y":570,"label":"4","role":null},"v25":{"x":910,"y":690,"label":"5","role":null}},"edges":[["t","v4",0],["v2","v4",0],["v3","v4",0],["v3","v5",0],["v3","v6",0],["v3","v7",0],["v3","v8",0],["v4","v9",1],["v4","v10",1],["v4","v11",0],["v5","v11",1],["v5","v12",1],["v6","v12",0],["v7","v12",0],["v8","v12",1],["v8","v13",0],["v9","v14",1],["v10","v14",0],["v10","v15",1],["v11","v15",0],["v12","v15",0],["v13","v15",1],["v14","v16",0],["v15","v16",1],["v15","v17",0],["v15","v18",1],["v15","v19",0],["v15","v20",0],["v16","s",1],["v17","s",0],["v18","s",1],["v19","s",1],["v20","s",1],["v20","v22",1],["v20","v23",1],["v20","v24",0],["v20","v25",1],["v5","v6",1],["v10","v11",0],["v16","v17",0],["v23","v24",0]],"start":"s","goal":"t","_optimal":9},{"name":"Level 30","vertices":{"v1":{"x":90,"y":210,"label":"1","role":null},"v2":{"x":90,"y":330,"label":"2","role":null},"t":{"x":90,"y":450,"label":"t","role":"goal"},"v4":{"x":90,"y":570,"label":"4","role":null},"v5":{"x":90,"y":690,"label":"5","role":null},"v6":{"x":230,"y":210,"label":"1","role":null},"v7":{"x":230,"y":330,"label":"2","role":null},"v8":{"x":230,"y":450,"label":"3","role":null},"v9":{"x":230,"y":570,"label":"4","role":null},"v10":{"x":230,"y":690,"label":"5","role":null},"v11":{"x":370,"y":234,"label":"1","role":null},"v12":{"x":370,"y":378,"label":"2","role":null},"v13":{"x":370,"y":522,"label":"3","role":null},"v14":{"x":370,"y":666,"label":"4","role":null},"v15":{"x":510,"y":270,"label":"1","role":null},"v16":{"x":510,"y":450,"label":"2","role":null},"v17":{"x":510,"y":630,"label":"3","role":null},"v18":{"x":650,"y":210,"label":"1","role":null},"v19":{"x":650,"y":330,"label":"2","role":null},"v20":{"x":650,"y":450,"label":"3","role":null},"v21":{"x":650,"y":570,"label":"4","role":null},"v22":{"x":650,"y":690,"label":"5","role":null},"s":{"x":790,"y":450,"label":"s","role":"start"},"v24":{"x":930,"y":270,"label":"1","role":null},"v25":{"x":930,"y":450,"label":"2","role":null},"v26":{"x":930,"y":630,"label":"3","role":null}},"edges":[["v1","v6",1],["v1","v7",0],["v1","v8",1],["v1","v9",1],["v1","v10",1],["v2","v10",0],["t","v10",0],["v4","v10",0],["v5","v10",0],["v2","v8",1],["v6","v11",0],["v6","v12",1],["v6","v13",0],["v7","v13",0],["v8","v13",0],["v9","v13",1],["v10","v13",0],["v10","v14",0],["v11","v15",0],["v12","v15",1],["v12","v16",0],["v13","v16",0],["v13","v17",0],["v14","v17",1],["v15","v18",0],["v16","v18",1],["v17","v18",0],["v17","v19",0],["v17","v20",0],["v17","v21",0],["v17","v22",0],["v18","s",0],["v19","s",0],["v20","s",0],["v21","s",1],["v22","s",0],["s","v24",0],["s","v25",0],["s","v26",1],["v1","v2",0],["v9","v10",0],["v11","v12",1],["v24","v25",0]],"start":"s","goal":"t","_optimal":9}];
+const PRESETS_GOAL = [{"name":"Level 1","vertices":{"v1":{"x":400,"y":100,"label":"1","role":null},"v2":{"x":315,"y":250,"label":"2","role":null},"v3":{"x":485,"y":250,"label":"3","role":null},"s":{"x":230,"y":400,"label":"s","role":"start"},"v4":{"x":400,"y":400,"label":"4","role":null},"t":{"x":570,"y":400,"label":"t","role":"goal"}},"edges":[["v2","s",1],["v1","v3",0],["v2","v3",1],["v2","v4",1],["v4","t",1],["v1","v2",0],["v3","t",1],["v3","v4",0]],"start":"s","goal":"t","_optimal":7,"canRevisit":true},{"name":"Level 2","vertices":{"t":{"x":586,"y":109,"label":"t","role":"goal"},"v1":{"x":788,"y":277,"label":"1","role":null},"v2":{"x":407,"y":482,"label":"2","role":null},"v3":{"x":710,"y":463,"label":"3","role":null},"v4":{"x":291,"y":614,"label":"4","role":null},"s":{"x":129,"y":540,"label":"s","role":"start"},"v5":{"x":788,"y":622,"label":"5","role":null},"v6":{"x":237,"y":234,"label":"6","role":null},"v7":{"x":481,"y":327,"label":"7","role":null}},"edges":[["v1","v7",0],["v2","v6",1],["v3","v7",1],["v3","v5",0],["t","v7",1],["v4","s",0],["v1","v3",0],["t","v1",1],["v2","s",1],["v6","v7",1],["v2","v3",1],["v2","v4",0]],"start":"s","goal":"t","_optimal":10,"canRevisit":true},{"name":"Level 3","vertices":{"v1":{"x":171,"y":558,"label":"1","role":null},"v2":{"x":422,"y":454,"label":"2","role":null},"v3":{"x":657,"y":560,"label":"3","role":null},"v4":{"x":290,"y":240,"label":"4","role":null},"v5":{"x":961,"y":586,"label":"5","role":null},"v6":{"x":476,"y":125,"label":"6","role":null},"v7":{"x":110,"y":384,"label":"7","role":null},"v8":{"x":941,"y":236,"label":"8","role":null},"v9":{"x":743,"y":410,"label":"9","role":null},"t":{"x":693,"y":139,"label":"t","role":"goal"},"v10":{"x":534,"y":283,"label":"10","role":null},"s":{"x":442,"y":617,"label":"s","role":"start"}},"edges":[["v4","v6",0],["v6","t",1],["v3","v5",0],["v4","v10",0],["v3","v9",0],["v1","s",1],["v1","v2",1],["v5","v9",1],["v2","v4",0],["v4","v7",1],["v2","v7",0],["v8","v9",0],["v2","v3",1],["v2","s",1],["v9","t",0],["v2","v10",1]],"start":"s","goal":"t","_optimal":7,"canRevisit":true},{"name":"Level 4","vertices":{"v1":{"x":567,"y":551,"label":"1","role":null},"v2":{"x":177,"y":537,"label":"2","role":null},"v3":{"x":754,"y":569,"label":"3","role":null},"s":{"x":155,"y":157,"label":"s","role":"start"},"v4":{"x":367,"y":607,"label":"4","role":null},"t":{"x":758,"y":126,"label":"t","role":"goal"},"v5":{"x":765,"y":319,"label":"5","role":null},"v6":{"x":293,"y":363,"label":"6","role":null},"v7":{"x":533,"y":113,"label":"7","role":null}},"edges":[["v2","v6",1],["t","v7",1],["t","v5",1],["v1","v3",0],["v1","v5",1],["s","v6",1],["v3","v5",0],["v1","v4",1],["v4","v6",0],["v2","v4",0],["v5","v7",0]],"start":"s","goal":"t","_optimal":12,"canRevisit":true},{"name":"Level 5","vertices":{"s":{"x":100,"y":100,"label":"s","role":"start"},"v1":{"x":270,"y":100,"label":"1","role":null},"v2":{"x":440,"y":100,"label":"2","role":null},"v3":{"x":100,"y":270,"label":"3","role":null},"v4":{"x":270,"y":270,"label":"4","role":null},"v5":{"x":440,"y":270,"label":"5","role":null},"v6":{"x":100,"y":440,"label":"6","role":null},"v7":{"x":270,"y":440,"label":"7","role":null},"t":{"x":440,"y":440,"label":"t","role":"goal"}},"edges":[["v1","v2",0],["v1","v4",1],["s","v3",1],["v7","t",1],["v3","v6",0],["v4","v7",0],["v2","v5",0],["v6","v7",0],["v3","v4",1],["v4","v5",1],["s","v1",1],["v5","t",1]],"start":"s","goal":"t","_optimal":8,"canRevisit":true},{"name":"Level 6","vertices":{"v1":{"x":468,"y":627,"label":"1","role":null},"v2":{"x":586,"y":196,"label":"2","role":null},"t":{"x":161,"y":163,"label":"t","role":"goal"},"v3":{"x":788,"y":581,"label":"3","role":null},"v4":{"x":247,"y":295,"label":"4","role":null},"s":{"x":790,"y":162,"label":"s","role":"start"},"v5":{"x":594,"y":482,"label":"5","role":null},"v6":{"x":277,"y":643,"label":"6","role":null},"v7":{"x":410,"y":311,"label":"7","role":null},"v8":{"x":146,"y":448,"label":"8","role":null},"v9":{"x":345,"y":113,"label":"9","role":null}},"edges":[["v2","v9",1],["v1","v6",0],["v1","v5",1],["v2","v7",0],["v3","v5",0],["t","v4",1],["v4","v7",0],["t","v8",1],["v4","v9",1],["v2","s",1],["v6","v8",1],["v7","v8",1],["v7","v9",0],["v4","v8",1],["v5","v7",0]],"start":"s","goal":"t","_optimal":11,"canRevisit":true},{"name":"Level 7","vertices":{"v1":{"x":562,"y":367,"label":"1","role":null},"t":{"x":232,"y":141,"label":"t","role":"goal"},"v2":{"x":791,"y":612,"label":"2","role":null},"s":{"x":333,"y":630,"label":"s","role":"start"},"v3":{"x":758,"y":190,"label":"3","role":null},"v4":{"x":310,"y":469,"label":"4","role":null},"v5":{"x":539,"y":126,"label":"5","role":null},"v6":{"x":534,"y":563,"label":"6","role":null},"v7":{"x":177,"y":602,"label":"7","role":null},"v8":{"x":759,"y":378,"label":"8","role":null}},"edges":[["v4","v7",1],["v3","v8",1],["v1","v3",1],["s","v7",1],["v2","v8",0],["t","v5",0],["v4","v6",1],["v1","v8",1],["v1","v6",0],["s","v6",1],["v6","v8",0],["v2","v6",1],["v1","v4",1],["v1","v5",1]],"start":"s","goal":"t","_optimal":11,"canRevisit":true},{"name":"Level 8","vertices":{"v1":{"x":551,"y":402,"label":"1","role":null},"s":{"x":121,"y":634,"label":"s","role":"start"},"t":{"x":693,"y":157,"label":"t","role":"goal"},"v2":{"x":786,"y":323,"label":"2","role":null},"v3":{"x":382,"y":356,"label":"3","role":null},"v4":{"x":633,"y":536,"label":"4","role":null},"v5":{"x":273,"y":230,"label":"5","role":null},"v6":{"x":229,"y":437,"label":"6","role":null},"v7":{"x":365,"y":644,"label":"7","role":null},"v8":{"x":447,"y":199,"label":"8","role":null}},"edges":[["s","v7",1],["v3","v6",1],["v1","v3",1],["t","v8",1],["v5","v8",0],["v3","v8",0],["v3","v5",0],["v4","v7",0],["v2","v4",0],["v3","v4",0],["s","v6",0],["v1","t",0],["v1","v2",1],["v6","v7",0]],"start":"s","goal":"t","_optimal":12,"canRevisit":true},{"name":"Level 9","vertices":{"v1":{"x":313,"y":106,"label":"1","role":null},"v2":{"x":673,"y":233,"label":"2","role":null},"v3":{"x":945,"y":644,"label":"3","role":null},"v4":{"x":426,"y":561,"label":"4","role":null},"v5":{"x":763,"y":537,"label":"5","role":null},"v6":{"x":425,"y":357,"label":"6","role":null},"v7":{"x":455,"y":189,"label":"7","role":null},"t":{"x":950,"y":265,"label":"t","role":"goal"},"v8":{"x":134,"y":469,"label":"8","role":null},"v9":{"x":255,"y":579,"label":"9","role":null},"v10":{"x":792,"y":345,"label":"10","role":null},"s":{"x":101,"y":207,"label":"s","role":"start"}},"edges":[["v2","v5",0],["v8","s",1],["v1","v6",0],["v6","v7",1],["v2","v10",1],["v4","v8",1],["v8","v9",1],["v6","v9",1],["v5","v10",0],["v6","v8",0],["v3","v5",0],["v2","v7",1],["t","v10",1],["v1","s",1],["v4","v6",0],["v2","v6",1]],"start":"s","goal":"t","_optimal":12,"canRevisit":true},{"name":"Level 10","vertices":{"t":{"x":215,"y":324,"label":"t","role":"goal"},"s":{"x":309,"y":631,"label":"s","role":"start"},"v1":{"x":688,"y":309,"label":"1","role":null},"v2":{"x":261,"y":112,"label":"2","role":null},"v3":{"x":757,"y":489,"label":"3","role":null},"v4":{"x":441,"y":234,"label":"4","role":null},"v5":{"x":552,"y":610,"label":"5","role":null},"v6":{"x":576,"y":424,"label":"6","role":null},"v7":{"x":592,"y":139,"label":"7","role":null}},"edges":[["v3","v5",0],["v3","v6",0],["s","v5",1],["v5","v6",1],["t","v4",1],["v1","v4",1],["v4","v6",1],["v2","v4",0],["v6","v7",1],["v1","v3",0],["v4","v7",0],["v1","v6",1]],"start":"s","goal":"t","_optimal":15,"canRevisit":true},{"name":"Level 11","vertices":{"v1":{"x":718,"y":176,"label":"1","role":null},"v2":{"x":204,"y":140,"label":"2","role":null},"v3":{"x":855,"y":538,"label":"3","role":null},"v4":{"x":284,"y":420,"label":"4","role":null},"v5":{"x":443,"y":150,"label":"5","role":null},"v6":{"x":583,"y":574,"label":"6","role":null},"v7":{"x":690,"y":382,"label":"7","role":null},"v8":{"x":447,"y":374,"label":"8","role":null},"v9":{"x":355,"y":576,"label":"9","role":null},"t":{"x":106,"y":585,"label":"t","role":"goal"},"s":{"x":913,"y":189,"label":"s","role":"start"},"v10":{"x":132,"y":362,"label":"10","role":null}},"edges":[["v1","v5",0],["v1","v7",0],["v4","v9",0],["v4","v5",1],["v7","v8",1],["v8","v9",0],["v6","v8",1],["v2","v4",1],["v4","v8",1],["v3","v7",0],["v9","v10",1],["v7","s",0],["v8","v10",1],["t","v10",1],["v6","v7",1],["v1","s",1]],"start":"s","goal":"t","_optimal":15,"canRevisit":true},{"name":"Level 12","vertices":{"t":{"x":189,"y":119,"label":"t","role":"goal"},"v1":{"x":313,"y":258,"label":"1","role":null},"v2":{"x":141,"y":626,"label":"2","role":null},"v3":{"x":766,"y":500,"label":"3","role":null},"v4":{"x":463,"y":474,"label":"4","role":null},"v5":{"x":315,"y":643,"label":"5","role":null},"v6":{"x":255,"y":456,"label":"6","role":null},"v7":{"x":595,"y":195,"label":"7","role":null},"s":{"x":595,"y":631,"label":"s","role":"start"}},"edges":[["v4","s",1],["v1","v7",0],["v2","v6",1],["v2","v5",1],["v4","v7",1],["t","v1",1],["v4","v5",0],["v4","v6",0],["v5","s",0],["v3","v4",0],["v5","v6",1],["v1","v6",1]],"start":"s","goal":"t","_optimal":16,"canRevisit":true},{"name":"Level 13","vertices":{"v1":{"x":400,"y":290,"label":"1","role":null},"v2":{"x":505,"y":366,"label":"2","role":null},"v3":{"x":465,"y":489,"label":"3","role":null},"v4":{"x":335,"y":489,"label":"4","role":null},"v5":{"x":295,"y":366,"label":"5","role":null},"v6":{"x":400,"y":150,"label":"6","role":null},"s":{"x":638,"y":323,"label":"s","role":"start"},"v7":{"x":547,"y":602,"label":"7","role":null},"t":{"x":253,"y":602,"label":"t","role":"goal"},"v8":{"x":162,"y":323,"label":"8","role":null}},"edges":[["v5","v6",1],["v1","v3",0],["v1","v4",0],["v5","v8",0],["v2","v6",0],["v4","v7",1],["v3","v7",1],["v2","s",1],["v2","v3",1],["v7","t",0],["v6","s",1],["v4","v5",1],["v4","t",1],["v6","v8",0]],"start":"s","goal":"t","_optimal":15,"canRevisit":true},{"name":"Level 14","vertices":{"v1":{"x":709,"y":429,"label":"1","role":null},"v2":{"x":159,"y":213,"label":"2","role":null},"v3":{"x":490,"y":400,"label":"3","role":null},"v4":{"x":254,"y":551,"label":"4","role":null},"v5":{"x":741,"y":171,"label":"5","role":null},"v6":{"x":305,"y":106,"label":"6","role":null},"v7":{"x":604,"y":549,"label":"7","role":null},"s":{"x":152,"y":392,"label":"s","role":"start"},"v8":{"x":292,"y":304,"label":"8","role":null},"v9":{"x":529,"y":101,"label":"9","role":null},"t":{"x":737,"y":641,"label":"t","role":"goal"}},"edges":[["v6","v9",0],["v1","v5",0],["v4","s",1],["v1","v7",0],["v3","v4",0],["v5","v9",1],["v4","v8",0],["v8","v9",1],["v2","v8",0],["v7","t",1],["v6","v8",1],["v3","v9",1],["v2","s",0],["v1","t",0],["v3","v8",1]],"start":"s","goal":"t","_optimal":17,"canRevisit":true},{"name":"Level 15","vertices":{"t":{"x":100,"y":100,"label":"t","role":"goal"},"v1":{"x":270,"y":100,"label":"1","role":null},"v2":{"x":440,"y":100,"label":"2","role":null},"v3":{"x":610,"y":100,"label":"3","role":null},"v4":{"x":185,"y":250,"label":"4","role":null},"v5":{"x":355,"y":250,"label":"5","role":null},"v6":{"x":525,"y":250,"label":"6","role":null},"v7":{"x":695,"y":250,"label":"7","role":null},"v8":{"x":100,"y":400,"label":"8","role":null},"v9":{"x":270,"y":400,"label":"9","role":null},"v10":{"x":440,"y":400,"label":"10","role":null},"s":{"x":610,"y":400,"label":"s","role":"start"}},"edges":[["v7","s",1],["v3","v7",1],["v4","v5",0],["v4","v9",1],["v2","v5",0],["v6","v7",0],["v5","v10",0],["v1","v2",1],["t","v4",1],["v9","v10",1],["v5","v9",1],["v4","v8",1],["v6","v10",0],["v1","v4",1],["t","v1",1],["v5","v6",1]],"start":"s","goal":"t","_optimal":18,"canRevisit":true},{"name":"Level 16","vertices":{"t":{"x":608,"y":486,"label":"t","role":"goal"},"v1":{"x":449,"y":486,"label":"1","role":null},"v2":{"x":718,"y":172,"label":"2","role":null},"v3":{"x":508,"y":111,"label":"3","role":null},"v4":{"x":787,"y":500,"label":"4","role":null},"v5":{"x":268,"y":602,"label":"5","role":null},"s":{"x":102,"y":620,"label":"s","role":"start"},"v6":{"x":373,"y":294,"label":"6","role":null},"v7":{"x":121,"y":449,"label":"7","role":null},"v8":{"x":622,"y":305,"label":"8","role":null}},"edges":[["v2","v8",0],["v1","v5",1],["v4","v8",0],["t","v8",1],["v5","s",0],["v3","v6",1],["s","v7",1],["v1","v6",0],["v1","v8",1],["v5","v7",0],["v2","v3",0],["v6","v7",1],["v6","v8",1],["t","v4",1]],"start":"s","goal":"t","_optimal":18,"canRevisit":true},{"name":"Level 17","vertices":{"v1":{"x":758,"y":207,"label":"1","role":null},"v2":{"x":233,"y":506,"label":"2","role":null},"v3":{"x":586,"y":204,"label":"3","role":null},"v4":{"x":505,"y":461,"label":"4","role":null},"v5":{"x":417,"y":623,"label":"5","role":null},"v6":{"x":108,"y":287,"label":"6","role":null},"t":{"x":735,"y":579,"label":"t","role":"goal"},"v7":{"x":265,"y":231,"label":"7","role":null},"v8":{"x":461,"y":105,"label":"8","role":null},"s":{"x":126,"y":101,"label":"s","role":"start"}},"edges":[["v6","s",0],["v7","s",1],["v2","v5",0],["v2","v6",1],["v3","v8",0],["v4","v5",1],["v7","v8",0],["v1","v8",0],["v2","v7",1],["v2","v4",1],["v6","v7",0],["v3","v4",0],["v1","v3",0],["v4","t",1]],"start":"s","goal":"t","_optimal":18,"canRevisit":true},{"name":"Level 18","vertices":{"v1":{"x":553,"y":440,"label":"1","role":null},"v2":{"x":677,"y":540,"label":"2","role":null},"v3":{"x":813,"y":393,"label":"3","role":null},"v4":{"x":254,"y":456,"label":"4","role":null},"v5":{"x":120,"y":158,"label":"5","role":null},"v6":{"x":453,"y":562,"label":"6","role":null},"v7":{"x":324,"y":151,"label":"7","role":null},"v8":{"x":395,"y":368,"label":"8","role":null},"v9":{"x":960,"y":164,"label":"9","role":null},"v10":{"x":687,"y":139,"label":"10","role":null},"t":{"x":193,"y":604,"label":"t","role":"goal"},"s":{"x":911,"y":631,"label":"s","role":"start"},"v11":{"x":645,"y":312,"label":"11","role":null}},"edges":[["v4","t",0],["v4","v6",1],["v2","v3",0],["v1","v11",1],["v2","s",1],["v1","v3",0],["v7","v8",1],["v2","v11",1],["v9","v10",0],["v4","v7",0],["v1","v8",0],["v3","v9",0],["v1","v6",0],["v10","v11",0],["v5","v7",0],["v8","v11",1],["v3","v10",1],["v1","v2",0]],"start":"s","goal":"t","_optimal":20,"canRevisit":true},{"name":"Level 19","vertices":{"v1":{"x":862,"y":336,"label":"1","role":null},"v2":{"x":715,"y":537,"label":"2","role":null},"t":{"x":144,"y":285,"label":"t","role":"goal"},"v3":{"x":393,"y":346,"label":"3","role":null},"v4":{"x":153,"y":577,"label":"4","role":null},"v5":{"x":194,"y":119,"label":"5","role":null},"v6":{"x":645,"y":165,"label":"6","role":null},"v7":{"x":437,"y":620,"label":"7","role":null},"s":{"x":964,"y":494,"label":"s","role":"start"},"v8":{"x":384,"y":129,"label":"8","role":null},"v9":{"x":293,"y":497,"label":"9","role":null},"v10":{"x":824,"y":159,"label":"10","role":null},"v11":{"x":554,"y":371,"label":"11","role":null}},"edges":[["v2","v7",0],["v6","v10",0],["t","v3",0],["v4","v7",1],["v9","v11",0],["v3","v5",1],["v7","v11",1],["v2","s",1],["v1","v2",1],["t","v5",1],["v6","v8",0],["v1","v11",1],["v3","v6",1],["v1","v10",1],["v7","v9",0],["v8","v11",0],["v1","v6",1],["v5","v8",1]],"start":"s","goal":"t","_optimal":20,"canRevisit":true},{"name":"Level 20","vertices":{"v1":{"x":201,"y":362,"label":"1","role":null},"v2":{"x":338,"y":626,"label":"2","role":null},"v3":{"x":428,"y":446,"label":"3","role":null},"s":{"x":718,"y":475,"label":"s","role":"start"},"v4":{"x":772,"y":229,"label":"4","role":null},"v5":{"x":566,"y":295,"label":"5","role":null},"v6":{"x":133,"y":178,"label":"6","role":null},"v7":{"x":394,"y":137,"label":"7","role":null},"v8":{"x":530,"y":588,"label":"8","role":null},"t":{"x":137,"y":554,"label":"t","role":"goal"},"v9":{"x":379,"y":296,"label":"9","role":null}},"edges":[["v1","v9",1],["v3","v5",0],["v1","v6",0],["v4","v5",1],["v5","v7",0],["v1","v7",0],["v5","v9",1],["v3","v9",1],["v2","v3",1],["v2","t",0],["s","v8",1],["v5","v8",0],["s","v4",1],["v6","v7",1],["v7","v9",1]],"start":"s","goal":"t","_optimal":21,"canRevisit":true},{"name":"Level 21","vertices":{"v1":{"x":616,"y":487,"label":"1","role":null},"v2":{"x":297,"y":484,"label":"2","role":null},"v3":{"x":190,"y":251,"label":"3","role":null},"v4":{"x":343,"y":206,"label":"4","role":null},"s":{"x":111,"y":551,"label":"s","role":"start"},"v5":{"x":440,"y":347,"label":"5","role":null},"v6":{"x":681,"y":121,"label":"6","role":null},"v7":{"x":787,"y":524,"label":"7","role":null},"v8":{"x":515,"y":170,"label":"8","role":null},"t":{"x":782,"y":364,"label":"t","role":"goal"}},"edges":[["v6","t",0],["v3","v5",0],["v6","v8",1],["v2","v4",0],["v1","v5",1],["v2","v3",0],["v3","s",1],["v4","v8",1],["v7","t",1],["v1","v2",0],["v3","v4",0],["v5","v8",1],["v1","v7",0],["v2","v5",0]],"start":"s","goal":"t","_optimal":22,"canRevisit":true},{"name":"Level 22","vertices":{"v1":{"x":682,"y":439,"label":"1","role":null},"v2":{"x":829,"y":562,"label":"2","role":null},"v3":{"x":578,"y":196,"label":"3","role":null},"t":{"x":846,"y":150,"label":"t","role":"goal"},"v4":{"x":262,"y":110,"label":"4","role":null},"v5":{"x":245,"y":457,"label":"5","role":null},"v6":{"x":474,"y":526,"label":"6","role":null},"v7":{"x":946,"y":355,"label":"7","role":null},"v8":{"x":457,"y":348,"label":"8","role":null},"v9":{"x":118,"y":173,"label":"9","role":null},"s":{"x":154,"y":631,"label":"s","role":"start"},"v10":{"x":286,"y":293,"label":"10","role":null}},"edges":[["v1","v8",0],["v3","v8",1],["v4","v8",0],["v2","v7",0],["v1","v6",1],["v8","v10",0],["v6","v8",1],["v4","v9",0],["v5","v6",1],["v9","v10",1],["v5","v8",0],["v3","v10",1],["v5","v10",0],["t","v7",0],["v5","s",1],["v1","v7",1]],"start":"s","goal":"t","_optimal":23,"canRevisit":true},{"name":"Level 23","vertices":{"v1":{"x":135,"y":264,"label":"1","role":null},"s":{"x":832,"y":100,"label":"s","role":"start"},"t":{"x":241,"y":396,"label":"t","role":"goal"},"v2":{"x":752,"y":247,"label":"2","role":null},"v3":{"x":328,"y":138,"label":"3","role":null},"v4":{"x":630,"y":607,"label":"4","role":null},"v5":{"x":547,"y":435,"label":"5","role":null},"v6":{"x":854,"y":389,"label":"6","role":null},"v7":{"x":513,"y":192,"label":"7","role":null},"v8":{"x":820,"y":587,"label":"8","role":null},"v9":{"x":383,"y":325,"label":"9","role":null},"v10":{"x":293,"y":627,"label":"10","role":null},"v11":{"x":467,"y":581,"label":"11","role":null}},"edges":[["s","v6",1],["t","v10",0],["v10","v11",1],["v2","v5",1],["v4","v11",1],["v3","v7",1],["v1","v9",0],["v9","v11",1],["v4","v8",1],["v5","v7",0],["v1","v3",1],["v4","v5",1],["v2","v6",1],["v9","v10",1],["v2","v7",0],["v5","v8",0],["v5","v11",0],["v6","v8",0]],"start":"s","goal":"t","_optimal":22,"canRevisit":true},{"name":"Level 24","vertices":{"t":{"x":100,"y":100,"label":"t","role":"goal"},"v1":{"x":270,"y":100,"label":"1","role":null},"v2":{"x":440,"y":100,"label":"2","role":null},"v3":{"x":610,"y":100,"label":"3","role":null},"v4":{"x":100,"y":270,"label":"4","role":null},"v5":{"x":270,"y":270,"label":"5","role":null},"v6":{"x":440,"y":270,"label":"6","role":null},"v7":{"x":610,"y":270,"label":"7","role":null},"v8":{"x":100,"y":440,"label":"8","role":null},"v9":{"x":270,"y":440,"label":"9","role":null},"v10":{"x":440,"y":440,"label":"10","role":null},"s":{"x":610,"y":440,"label":"s","role":"start"}},"edges":[["v8","v9",1],["v6","v10",1],["v5","v9",0],["v2","v3",0],["v1","v2",0],["v4","v5",1],["v10","s",0],["v7","s",1],["v4","v8",0],["v3","v7",0],["v9","v10",0],["v5","v6",1],["v6","v7",0],["v1","v5",0],["t","v4",1],["v2","v6",1]],"start":"s","goal":"t","_optimal":25,"canRevisit":true},{"name":"Level 25","vertices":{"v1":{"x":317,"y":324,"label":"1","role":null},"v2":{"x":664,"y":519,"label":"2","role":null},"v3":{"x":505,"y":305,"label":"3","role":null},"v4":{"x":741,"y":238,"label":"4","role":null},"v5":{"x":912,"y":475,"label":"5","role":null},"v6":{"x":920,"y":152,"label":"6","role":null},"v7":{"x":211,"y":204,"label":"7","role":null},"v8":{"x":457,"y":492,"label":"8","role":null},"v9":{"x":569,"y":118,"label":"9","role":null},"v10":{"x":113,"y":420,"label":"10","role":null},"s":{"x":260,"y":536,"label":"s","role":"start"},"t":{"x":885,"y":638,"label":"t","role":"goal"}},"edges":[["v5","t",1],["v2","v3",0],["v2","t",1],["v4","v6",1],["v3","v7",0],["v10","s",1],["v4","v5",1],["v2","v4",1],["v3","v4",0],["v7","v10",0],["v2","v8",1],["v3","v8",1],["v1","v8",1],["v1","s",0],["v3","v9",0],["v1","v3",0]],"start":"s","goal":"t","_optimal":23,"canRevisit":true},{"name":"Level 26","vertices":{"v1":{"x":883,"y":512,"label":"1","role":null},"v2":{"x":147,"y":602,"label":"2","role":null},"v3":{"x":607,"y":480,"label":"3","role":null},"v4":{"x":709,"y":335,"label":"4","role":null},"v5":{"x":849,"y":168,"label":"5","role":null},"v6":{"x":211,"y":452,"label":"6","role":null},"v7":{"x":391,"y":249,"label":"7","role":null},"v8":{"x":560,"y":118,"label":"8","role":null},"v9":{"x":237,"y":153,"label":"9","role":null},"v10":{"x":404,"y":435,"label":"10","role":null},"v11":{"x":424,"y":629,"label":"11","role":null},"t":{"x":145,"y":297,"label":"t","role":"goal"},"s":{"x":956,"y":284,"label":"s","role":"start"}},"edges":[["v3","v7",0],["v4","v8",0],["v2","t",1],["v2","v11",0],["v1","v4",0],["v2","v6",1],["v9","t",1],["v7","v8",1],["v3","v10",1],["v6","v10",0],["v5","s",1],["v6","v11",1],["v5","v8",0],["v7","v9",1],["v6","v7",1],["v3","v4",1],["v6","t",1],["v4","s",0]],"start":"s","goal":"t","_optimal":23,"canRevisit":true},{"name":"Level 27","vertices":{"v1":{"x":295,"y":120,"label":"1","role":null},"v2":{"x":475,"y":540,"label":"2","role":null},"v3":{"x":107,"y":146,"label":"3","role":null},"v4":{"x":286,"y":588,"label":"4","role":null},"v5":{"x":470,"y":356,"label":"5","role":null},"v6":{"x":311,"y":366,"label":"6","role":null},"v7":{"x":631,"y":435,"label":"7","role":null},"t":{"x":669,"y":644,"label":"t","role":"goal"},"s":{"x":123,"y":496,"label":"s","role":"start"},"v8":{"x":758,"y":121,"label":"8","role":null},"v9":{"x":632,"y":218,"label":"9","role":null}},"edges":[["v7","t",1],["v1","v6",1],["v2","v5",0],["v4","s",1],["v1","v3",1],["v5","v6",0],["v3","v6",1],["v5","v7",1],["v2","v7",1],["v4","v5",0],["v4","v6",0],["v5","v9",1],["v1","v5",0],["v8","v9",0],["v2","v4",0]],"start":"s","goal":"t","_optimal":23,"canRevisit":true},{"name":"Level 28","vertices":{"v1":{"x":562,"y":474,"label":"1","role":null},"v2":{"x":610,"y":211,"label":"2","role":null},"s":{"x":777,"y":533,"label":"s","role":"start"},"v3":{"x":240,"y":562,"label":"3","role":null},"v4":{"x":168,"y":319,"label":"4","role":null},"v5":{"x":392,"y":123,"label":"5","role":null},"v6":{"x":428,"y":328,"label":"6","role":null},"v7":{"x":727,"y":363,"label":"7","role":null},"v8":{"x":436,"y":601,"label":"8","role":null},"t":{"x":178,"y":152,"label":"t","role":"goal"},"v9":{"x":770,"y":140,"label":"9","role":null}},"edges":[["v1","v6",1],["v4","v5",1],["v5","v6",1],["v4","t",1],["v6","v7",1],["v1","v7",0],["v2","v5",0],["s","v7",0],["v3","v6",0],["v4","v6",0],["v1","s",1],["v2","v9",1],["v6","v8",0],["v2","v7",0],["v7","v9",1]],"start":"s","goal":"t","_optimal":24,"canRevisit":true},{"name":"Level 29","vertices":{"v1":{"x":541,"y":311,"label":"1","role":null},"v2":{"x":289,"y":134,"label":"2","role":null},"v3":{"x":128,"y":367,"label":"3","role":null},"v4":{"x":684,"y":515,"label":"4","role":null},"t":{"x":855,"y":239,"label":"t","role":"goal"},"s":{"x":106,"y":631,"label":"s","role":"start"},"v5":{"x":632,"y":157,"label":"5","role":null},"v6":{"x":907,"y":419,"label":"6","role":null},"v7":{"x":350,"y":632,"label":"7","role":null},"v8":{"x":446,"y":498,"label":"8","role":null},"v9":{"x":284,"y":411,"label":"9","role":null},"v10":{"x":955,"y":587,"label":"10","role":null},"v11":{"x":450,"y":178,"label":"11","role":null}},"edges":[["t","v6",0],["v1","v5",1],["v2","v11",0],["v5","v11",1],["v9","v11",1],["v7","v8",1],["s","v7",0],["v4","v10",1],["v1","v11",0],["v6","v10",0],["v7","v9",0],["s","v9",1],["v1","v8",1],["v1","v4",1],["v3","v9",0],["v1","v2",0],["v4","v8",0],["v8","v9",0]],"start":"s","goal":"t","_optimal":24,"canRevisit":true},{"name":"Level 30","vertices":{"v1":{"x":400,"y":280,"label":"1","role":null},"v2":{"x":504,"y":340,"label":"2","role":null},"v3":{"x":504,"y":460,"label":"3","role":null},"v4":{"x":400,"y":520,"label":"4","role":null},"s":{"x":296,"y":460,"label":"s","role":"start"},"v5":{"x":296,"y":340,"label":"5","role":null},"v6":{"x":530,"y":175,"label":"6","role":null},"v7":{"x":660,"y":400,"label":"7","role":null},"v8":{"x":530,"y":625,"label":"8","role":null},"t":{"x":270,"y":625,"label":"t","role":"goal"},"v9":{"x":140,"y":400,"label":"9","role":null},"v10":{"x":270,"y":175,"label":"10","role":null}},"edges":[["v2","v7",1],["v3","s",1],["v3","v4",1],["v2","v3",0],["v2","v6",0],["v3","v7",1],["v6","v10",1],["s","v5",1],["v1","v2",1],["v1","v5",0],["v9","v10",0],["v1","s",0],["v6","v7",1],["v7","v8",1],["v3","v8",0],["t","v9",0]],"start":"s","goal":"t","_optimal":28,"canRevisit":true}];
 
-const PRESETS_ALL = [{"name":"Level 1","vertices":{"s":{"x":90,"y":330,"label":"s","role":"start"},"v2":{"x":90,"y":570,"label":"2","role":null},"v3":{"x":910,"y":330,"label":"1","role":null},"v4":{"x":910,"y":570,"label":"2","role":null}},"edges":[["s","v3",0],["s","v4",1],["v2","v4",0],["s","v2",1],["v3","v4",0]],"start":"s","goal":null,"_optimal":3},{"name":"Level 2","vertices":{"v1":{"x":90,"y":330,"label":"1","role":null},"s":{"x":90,"y":570,"label":"s","role":"start"},"v3":{"x":363,"y":450,"label":"1","role":null},"v4":{"x":637,"y":450,"label":"1","role":null},"v5":{"x":910,"y":450,"label":"1","role":null}},"edges":[["v1","v3",0],["s","v3",1],["v3","v4",0],["v4","v5",0],["v1","s",1]],"start":"s","goal":null,"_optimal":4},{"name":"Level 3","vertices":{"s":{"x":90,"y":330,"label":"s","role":"start"},"v2":{"x":90,"y":570,"label":"2","role":null},"v3":{"x":500,"y":330,"label":"1","role":null},"v4":{"x":500,"y":570,"label":"2","role":null},"v5":{"x":910,"y":450,"label":"1","role":null}},"edges":[["s","v3",1],["v2","v3",0],["v2","v4",0],["v3","v5",0],["v4","v5",0],["s","v2",1]],"start":"s","goal":null,"_optimal":4},{"name":"Level 4","vertices":{"v1":{"x":90,"y":330,"label":"1","role":null},"v2":{"x":90,"y":570,"label":"2","role":null},"v3":{"x":363,"y":330,"label":"1","role":null},"v4":{"x":363,"y":570,"label":"2","role":null},"v5":{"x":637,"y":450,"label":"1","role":null},"s":{"x":910,"y":450,"label":"s","role":"start"}},"edges":[["v1","v3",0],["v2","v3",0],["v2","v4",0],["v3","v5",0],["v4","v5",0],["v5","s",1],["v1","v2",1],["v3","v4",1]],"start":"s","goal":null,"_optimal":5},{"name":"Level 5","vertices":{"s":{"x":90,"y":450,"label":"s","role":"start"},"v2":{"x":363,"y":270,"label":"1","role":null},"v3":{"x":363,"y":450,"label":"2","role":null},"v4":{"x":363,"y":630,"label":"3","role":null},"v5":{"x":637,"y":330,"label":"1","role":null},"v6":{"x":637,"y":570,"label":"2","role":null},"v7":{"x":910,"y":450,"label":"1","role":null}},"edges":[["s","v2",0],["s","v3",0],["s","v4",1],["v2","v5",1],["v2","v6",0],["v3","v6",0],["v4","v6",1],["v5","v7",0],["v6","v7",1],["v2","v3",0],["v3","v4",0],["v5","v6",0]],"start":"s","goal":null,"_optimal":6},{"name":"Level 6","vertices":{"s":{"x":90,"y":270,"label":"s","role":"start"},"v2":{"x":90,"y":450,"label":"2","role":null},"v3":{"x":90,"y":630,"label":"3","role":null},"v4":{"x":500,"y":270,"label":"1","role":null},"v5":{"x":500,"y":450,"label":"2","role":null},"v6":{"x":500,"y":630,"label":"3","role":null},"v7":{"x":910,"y":330,"label":"1","role":null},"v8":{"x":910,"y":570,"label":"2","role":null}},"edges":[["s","v4",1],["v2","v4",0],["v2","v5",0],["v2","v6",0],["v3","v6",1],["v4","v7",0],["v4","v8",0],["v5","v8",1],["v6","v8",0],["s","v2",1],["v2","v3",0],["v4","v5",0],["v5","v6",0],["v7","v8",0]],"start":"s","goal":null,"_optimal":7},{"name":"Level 7","vertices":{"v1":{"x":90,"y":450,"label":"1","role":null},"v2":{"x":500,"y":270,"label":"1","role":null},"v3":{"x":500,"y":450,"label":"2","role":null},"v4":{"x":500,"y":630,"label":"3","role":null},"s":{"x":910,"y":270,"label":"s","role":"start"},"v6":{"x":910,"y":450,"label":"2","role":null},"v7":{"x":910,"y":630,"label":"3","role":null}},"edges":[["v1","v2",0],["v1","v3",0],["v1","v4",0],["v2","s",1],["v2","v6",0],["v3","v6",0],["v4","v6",0],["v4","v7",0],["v2","v3",0],["v3","v4",0],["s","v6",0],["v6","v7",0]],"start":"s","goal":null,"_optimal":6},{"name":"Level 8","vertices":{"v1":{"x":90,"y":270,"label":"1","role":null},"s":{"x":90,"y":450,"label":"s","role":"start"},"v3":{"x":90,"y":630,"label":"3","role":null},"v4":{"x":500,"y":270,"label":"1","role":null},"v5":{"x":500,"y":450,"label":"2","role":null},"v6":{"x":500,"y":630,"label":"3","role":null},"v7":{"x":910,"y":270,"label":"1","role":null},"v8":{"x":910,"y":450,"label":"2","role":null},"v9":{"x":910,"y":630,"label":"3","role":null}},"edges":[["v1","v4",0],["v1","v5",0],["s","v5",1],["v3","v5",0],["v3","v6",0],["v3","v4",0],["v4","v7",0],["v4","v8",1],["v5","v8",0],["v6","v8",0],["v6","v9",0],["v5","v9",1],["v1","s",0],["s","v3",1],["v4","v5",1],["v5","v6",1],["v7","v8",1],["v8","v9",0]],"start":"s","goal":null,"_optimal":8},{"name":"Level 9","vertices":{"v1":{"x":90,"y":270,"label":"1","role":null},"v2":{"x":90,"y":450,"label":"2","role":null},"v3":{"x":90,"y":630,"label":"3","role":null},"v4":{"x":500,"y":270,"label":"1","role":null},"v5":{"x":500,"y":450,"label":"2","role":null},"v6":{"x":500,"y":630,"label":"3","role":null},"s":{"x":910,"y":270,"label":"s","role":"start"},"v8":{"x":910,"y":450,"label":"2","role":null},"v9":{"x":910,"y":630,"label":"3","role":null}},"edges":[["v1","v4",0],["v1","v5",0],["v2","v5",0],["v2","v6",1],["v3","v6",0],["v4","s",1],["v4","v8",0],["v5","v8",0],["v5","v9",0],["v6","v9",1],["v1","v2",0],["v2","v3",0],["v4","v5",0],["s","v8",0],["v8","v9",0]],"start":"s","goal":null,"_optimal":8},{"name":"Level 10","vertices":{"s":{"x":90,"y":330,"label":"s","role":"start"},"v2":{"x":90,"y":570,"label":"2","role":null},"v3":{"x":363,"y":330,"label":"1","role":null},"v4":{"x":363,"y":570,"label":"2","role":null},"v5":{"x":637,"y":270,"label":"1","role":null},"v6":{"x":637,"y":450,"label":"2","role":null},"v7":{"x":637,"y":630,"label":"3","role":null},"v8":{"x":910,"y":330,"label":"1","role":null},"v9":{"x":910,"y":570,"label":"2","role":null}},"edges":[["s","v3",1],["v2","v3",0],["v2","v4",0],["v3","v5",0],["v3","v6",1],["v4","v6",0],["v4","v7",0],["v5","v8",0],["v5","v9",1],["v6","v9",0],["v7","v9",1],["s","v2",1],["v3","v4",0],["v6","v7",0],["v8","v9",0]],"start":"s","goal":null,"_optimal":8},{"name":"Level 11","vertices":{"v1":{"x":90,"y":270,"label":"1","role":null},"v2":{"x":90,"y":450,"label":"2","role":null},"v3":{"x":90,"y":630,"label":"3","role":null},"v4":{"x":363,"y":270,"label":"1","role":null},"v5":{"x":363,"y":450,"label":"2","role":null},"v6":{"x":363,"y":630,"label":"3","role":null},"v7":{"x":637,"y":270,"label":"1","role":null},"s":{"x":637,"y":450,"label":"s","role":"start"},"v9":{"x":637,"y":630,"label":"3","role":null},"v10":{"x":910,"y":330,"label":"1","role":null},"v11":{"x":910,"y":570,"label":"2","role":null}},"edges":[["v1","v4",0],["v1","v5",0],["v1","v6",0],["v2","v6",1],["v3","v6",0],["v2","v4",0],["v4","v7",0],["v5","v7",1],["v5","s",1],["v6","s",0],["v6","v9",0],["v7","v10",0],["s","v10",1],["s","v11",0],["v9","v11",0],["v1","v2",0],["v2","v3",0],["v4","v5",1],["v7","s",0],["s","v9",1],["v10","v11",0]],"start":"s","goal":null,"_optimal":10},{"name":"Level 12","vertices":{"v1":{"x":90,"y":450,"label":"1","role":null},"v2":{"x":295,"y":270,"label":"1","role":null},"v3":{"x":295,"y":450,"label":"2","role":null},"v4":{"x":295,"y":630,"label":"3","role":null},"v5":{"x":500,"y":270,"label":"1","role":null},"v6":{"x":500,"y":450,"label":"2","role":null},"v7":{"x":500,"y":630,"label":"3","role":null},"v8":{"x":705,"y":450,"label":"1","role":null},"v9":{"x":910,"y":270,"label":"1","role":null},"v10":{"x":910,"y":450,"label":"2","role":null},"s":{"x":910,"y":630,"label":"s","role":"start"}},"edges":[["v1","v2",0],["v1","v3",0],["v1","v4",1],["v2","v5",0],["v2","v6",0],["v3","v6",0],["v4","v6",0],["v4","v7",0],["v4","v5",0],["v5","v8",0],["v6","v8",1],["v7","v8",0],["v8","v9",0],["v8","v10",1],["v8","s",1],["v2","v3",0],["v5","v6",0],["v6","v7",0],["v9","v10",0],["v10","s",1]],"start":"s","goal":null,"_optimal":10},{"name":"Level 13","vertices":{"v1":{"x":90,"y":270,"label":"1","role":null},"v2":{"x":90,"y":450,"label":"2","role":null},"s":{"x":90,"y":630,"label":"s","role":"start"},"v4":{"x":363,"y":270,"label":"1","role":null},"v5":{"x":363,"y":450,"label":"2","role":null},"v6":{"x":363,"y":630,"label":"3","role":null},"v7":{"x":637,"y":270,"label":"1","role":null},"v8":{"x":637,"y":450,"label":"2","role":null},"v9":{"x":637,"y":630,"label":"3","role":null},"v10":{"x":910,"y":270,"label":"1","role":null},"v11":{"x":910,"y":450,"label":"2","role":null},"v12":{"x":910,"y":630,"label":"3","role":null}},"edges":[["v1","v4",0],["v1","v5",1],["v1","v6",0],["v2","v6",0],["s","v6",1],["v4","v7",0],["v5","v7",1],["v5","v8",0],["v5","v9",0],["v6","v9",1],["v7","v10",0],["v8","v10",0],["v9","v10",0],["v9","v11",0],["v9","v12",0],["v7","v11",0],["v1","v2",1],["v2","s",1],["v4","v5",0],["v5","v6",0],["v7","v8",0],["v8","v9",0],["v10","v11",0],["v11","v12",0]],"start":"s","goal":null,"_optimal":11},{"name":"Level 14","vertices":{"v1":{"x":90,"y":330,"label":"1","role":null},"v2":{"x":90,"y":570,"label":"2","role":null},"v3":{"x":295,"y":330,"label":"1","role":null},"v4":{"x":295,"y":570,"label":"2","role":null},"v5":{"x":500,"y":234,"label":"1","role":null},"v6":{"x":500,"y":378,"label":"2","role":null},"v7":{"x":500,"y":522,"label":"3","role":null},"v8":{"x":500,"y":666,"label":"4","role":null},"v9":{"x":705,"y":270,"label":"1","role":null},"v10":{"x":705,"y":450,"label":"2","role":null},"v11":{"x":705,"y":630,"label":"3","role":null},"s":{"x":910,"y":330,"label":"s","role":"start"},"v13":{"x":910,"y":570,"label":"2","role":null}},"edges":[["v1","v3",0],["v1","v4",0],["v2","v4",0],["v3","v5",0],["v3","v6",1],["v3","v7",0],["v4","v7",0],["v4","v8",1],["v4","v6",0],["v5","v9",0],["v5","v10",0],["v5","v11",0],["v6","v11",0],["v7","v11",1],["v8","v11",0],["v9","s",1],["v9","v13",1],["v10","v13",1],["v11","v13",0],["v1","v2",0],["v3","v4",0],["v5","v6",0],["v6","v7",1],["v7","v8",0],["v9","v10",0],["v10","v11",1]],"start":"s","goal":null,"_optimal":12},{"name":"Level 15","vertices":{"v1":{"x":90,"y":330,"label":"1","role":null},"s":{"x":90,"y":570,"label":"s","role":"start"},"v3":{"x":363,"y":234,"label":"1","role":null},"v4":{"x":363,"y":378,"label":"2","role":null},"v5":{"x":363,"y":522,"label":"3","role":null},"v6":{"x":363,"y":666,"label":"4","role":null},"v7":{"x":637,"y":270,"label":"1","role":null},"v8":{"x":637,"y":450,"label":"2","role":null},"v9":{"x":637,"y":630,"label":"3","role":null},"v10":{"x":910,"y":234,"label":"1","role":null},"v11":{"x":910,"y":378,"label":"2","role":null},"v12":{"x":910,"y":522,"label":"3","role":null},"v13":{"x":910,"y":666,"label":"4","role":null}},"edges":[["v1","v3",0],["s","v3",0],["s","v4",1],["s","v5",0],["s","v6",0],["v3","v7",0],["v4","v7",0],["v4","v8",0],["v5","v8",0],["v5","v9",0],["v6","v9",0],["v7","v10",0],["v8","v10",0],["v8","v11",0],["v9","v11",0],["v9","v12",0],["v9","v13",0],["v1","s",1],["v3","v4",0],["v4","v5",1],["v5","v6",0],["v8","v9",0],["v10","v11",0],["v11","v12",1],["v12","v13",0]],"start":"s","goal":null,"_optimal":12},{"name":"Level 16","vertices":{"v1":{"x":90,"y":234,"label":"1","role":null},"v2":{"x":90,"y":378,"label":"2","role":null},"v3":{"x":90,"y":522,"label":"3","role":null},"v4":{"x":90,"y":666,"label":"4","role":null},"s":{"x":295,"y":330,"label":"s","role":"start"},"v6":{"x":295,"y":570,"label":"2","role":null},"v7":{"x":500,"y":330,"label":"1","role":null},"v8":{"x":500,"y":570,"label":"2","role":null},"v9":{"x":705,"y":330,"label":"1","role":null},"v10":{"x":705,"y":570,"label":"2","role":null},"v11":{"x":910,"y":270,"label":"1","role":null},"v12":{"x":910,"y":450,"label":"2","role":null},"v13":{"x":910,"y":630,"label":"3","role":null}},"edges":[["v1","s",1],["v1","v6",1],["v2","v6",1],["v3","v6",1],["v4","v6",0],["s","v7",0],["v6","v7",1],["v6","v8",0],["v7","v9",0],["v8","v9",0],["v8","v10",0],["v7","v10",0],["v9","v11",0],["v10","v11",1],["v10","v12",1],["v10","v13",0],["v1","v2",0],["v2","v3",0],["v3","v4",0],["v7","v8",1],["v9","v10",0],["v11","v12",0],["v12","v13",0]],"start":"s","goal":null,"_optimal":12},{"name":"Level 17","vertices":{"v1":{"x":90,"y":270,"label":"1","role":null},"v2":{"x":90,"y":450,"label":"2","role":null},"v3":{"x":90,"y":630,"label":"3","role":null},"v4":{"x":295,"y":270,"label":"1","role":null},"v5":{"x":295,"y":450,"label":"2","role":null},"v6":{"x":295,"y":630,"label":"3","role":null},"v7":{"x":500,"y":234,"label":"1","role":null},"v8":{"x":500,"y":378,"label":"2","role":null},"v9":{"x":500,"y":522,"label":"3","role":null},"v10":{"x":500,"y":666,"label":"4","role":null},"v11":{"x":705,"y":330,"label":"1","role":null},"v12":{"x":705,"y":570,"label":"2","role":null},"s":{"x":910,"y":450,"label":"s","role":"start"}},"edges":[["v1","v4",0],["v2","v4",1],["v3","v4",1],["v3","v5",1],["v3","v6",0],["v4","v7",0],["v5","v7",1],["v5","v8",0],["v6","v8",0],["v6","v9",1],["v6","v10",1],["v5","v10",0],["v7","v11",0],["v7","v12",0],["v8","v12",0],["v9","v12",0],["v10","v12",0],["v11","s",1],["v12","s",0],["v1","v2",0],["v2","v3",0],["v4","v5",1],["v5","v6",1],["v7","v8",0],["v8","v9",0],["v9","v10",0],["v11","v12",0]],"start":"s","goal":null,"_optimal":12},{"name":"Level 18","vertices":{"v1":{"x":90,"y":330,"label":"1","role":null},"v2":{"x":90,"y":570,"label":"2","role":null},"v3":{"x":363,"y":234,"label":"1","role":null},"v4":{"x":363,"y":378,"label":"2","role":null},"v5":{"x":363,"y":522,"label":"3","role":null},"s":{"x":363,"y":666,"label":"s","role":"start"},"v7":{"x":637,"y":234,"label":"1","role":null},"v8":{"x":637,"y":378,"label":"2","role":null},"v9":{"x":637,"y":522,"label":"3","role":null},"v10":{"x":637,"y":666,"label":"4","role":null},"v11":{"x":910,"y":234,"label":"1","role":null},"v12":{"x":910,"y":378,"label":"2","role":null},"v13":{"x":910,"y":522,"label":"3","role":null},"v14":{"x":910,"y":666,"label":"4","role":null}},"edges":[["v1","v3",1],["v2","v3",1],["v2","v4",0],["v2","v5",0],["v2","s",0],["v1","v4",0],["v3","v7",0],["v4","v7",1],["v4","v8",0],["v4","v9",0],["v5","v9",1],["s","v9",1],["s","v10",1],["v7","v11",0],["v8","v11",1],["v8","v12",0],["v8","v13",0],["v9","v13",0],["v9","v14",0],["v10","v14",0],["v8","v14",1],["v9","v12",1],["v1","v2",0],["v3","v4",0],["v4","v5",1],["v5","s",0],["v7","v8",0],["v8","v9",0],["v9","v10",0],["v11","v12",0],["v12","v13",0],["v13","v14",1]],"start":"s","goal":null,"_optimal":13},{"name":"Level 19","vertices":{"v1":{"x":90,"y":270,"label":"1","role":null},"v2":{"x":90,"y":450,"label":"2","role":null},"v3":{"x":90,"y":630,"label":"3","role":null},"v4":{"x":363,"y":234,"label":"1","role":null},"v5":{"x":363,"y":378,"label":"2","role":null},"v6":{"x":363,"y":522,"label":"3","role":null},"v7":{"x":363,"y":666,"label":"4","role":null},"v8":{"x":637,"y":234,"label":"1","role":null},"v9":{"x":637,"y":378,"label":"2","role":null},"v10":{"x":637,"y":522,"label":"3","role":null},"v11":{"x":637,"y":666,"label":"4","role":null},"v12":{"x":910,"y":234,"label":"1","role":null},"s":{"x":910,"y":378,"label":"s","role":"start"},"v14":{"x":910,"y":522,"label":"3","role":null},"v15":{"x":910,"y":666,"label":"4","role":null}},"edges":[["v1","v4",0],["v2","v4",1],["v2","v5",0],["v2","v6",0],["v3","v6",0],["v3","v7",0],["v4","v8",1],["v4","v9",0],["v5","v9",1],["v5","v10",0],["v5","v11",1],["v6","v11",1],["v7","v11",0],["v6","v8",1],["v7","v8",1],["v7","v9",1],["v8","v12",0],["v9","v12",0],["v9","s",0],["v9","v14",0],["v10","v14",0],["v11","v14",0],["v11","v15",0],["v1","v2",1],["v2","v3",1],["v4","v5",0],["v5","v6",1],["v6","v7",0],["v8","v9",0],["v9","v10",0],["v10","v11",0],["v12","s",1],["s","v14",0],["v14","v15",0]],"start":"s","goal":null,"_optimal":14},{"name":"Level 20","vertices":{"v1":{"x":90,"y":234,"label":"1","role":null},"v2":{"x":90,"y":378,"label":"2","role":null},"v3":{"x":90,"y":522,"label":"3","role":null},"s":{"x":90,"y":666,"label":"s","role":"start"},"v5":{"x":363,"y":234,"label":"1","role":null},"v6":{"x":363,"y":378,"label":"2","role":null},"v7":{"x":363,"y":522,"label":"3","role":null},"v8":{"x":363,"y":666,"label":"4","role":null},"v9":{"x":637,"y":270,"label":"1","role":null},"v10":{"x":637,"y":450,"label":"2","role":null},"v11":{"x":637,"y":630,"label":"3","role":null},"v12":{"x":910,"y":234,"label":"1","role":null},"v13":{"x":910,"y":378,"label":"2","role":null},"v14":{"x":910,"y":522,"label":"3","role":null},"v15":{"x":910,"y":666,"label":"4","role":null}},"edges":[["v1","v5",0],["v1","v6",1],["v1","v7",0],["v2","v7",0],["v3","v7",0],["s","v7",1],["s","v8",0],["v5","v9",0],["v6","v9",0],["v6","v10",0],["v6","v11",1],["v7","v11",0],["v8","v11",0],["v9","v12",0],["v10","v12",0],["v10","v13",1],["v11","v13",0],["v11","v14",1],["v11","v15",0],["v1","v2",0],["v2","v3",0],["v3","s",0],["v5","v6",0],["v6","v7",0],["v7","v8",1],["v9","v10",1],["v12","v13",0],["v13","v14",0],["v14","v15",0]],"start":"s","goal":null,"_optimal":14},{"name":"Level 21","vertices":{"v1":{"x":90,"y":270,"label":"1","role":null},"v2":{"x":90,"y":450,"label":"2","role":null},"v3":{"x":90,"y":630,"label":"3","role":null},"v4":{"x":254,"y":234,"label":"1","role":null},"v5":{"x":254,"y":378,"label":"2","role":null},"v6":{"x":254,"y":522,"label":"3","role":null},"v7":{"x":254,"y":666,"label":"4","role":null},"v8":{"x":418,"y":450,"label":"1","role":null},"v9":{"x":582,"y":270,"label":"1","role":null},"v10":{"x":582,"y":450,"label":"2","role":null},"v11":{"x":582,"y":630,"label":"3","role":null},"v12":{"x":746,"y":270,"label":"1","role":null},"v13":{"x":746,"y":450,"label":"2","role":null},"v14":{"x":746,"y":630,"label":"3","role":null},"s":{"x":910,"y":270,"label":"s","role":"start"},"v16":{"x":910,"y":450,"label":"2","role":null},"v17":{"x":910,"y":630,"label":"3","role":null}},"edges":[["v1","v4",0],["v1","v5",1],["v1","v6",0],["v2","v6",1],["v3","v6",0],["v3","v7",0],["v4","v8",1],["v5","v8",0],["v6","v8",1],["v7","v8",0],["v8","v9",0],["v8","v10",0],["v8","v11",0],["v9","v12",1],["v9","v13",0],["v9","v14",1],["v10","v14",1],["v11","v14",0],["v12","s",1],["v12","v16",1],["v13","v16",0],["v13","v17",0],["v14","v17",1],["v14","v16",0],["v1","v2",0],["v2","v3",1],["v4","v5",0],["v5","v6",0],["v6","v7",1],["v9","v10",0],["v10","v11",0],["v12","v13",0],["s","v16",1],["v16","v17",0]],"start":"s","goal":null,"_optimal":16},{"name":"Level 22","vertices":{"v1":{"x":90,"y":330,"label":"1","role":null},"v2":{"x":90,"y":570,"label":"2","role":null},"v3":{"x":254,"y":270,"label":"1","role":null},"v4":{"x":254,"y":450,"label":"2","role":null},"v5":{"x":254,"y":630,"label":"3","role":null},"v6":{"x":418,"y":234,"label":"1","role":null},"v7":{"x":418,"y":378,"label":"2","role":null},"v8":{"x":418,"y":522,"label":"3","role":null},"v9":{"x":418,"y":666,"label":"4","role":null},"v10":{"x":582,"y":234,"label":"1","role":null},"v11":{"x":582,"y":378,"label":"2","role":null},"v12":{"x":582,"y":522,"label":"3","role":null},"v13":{"x":582,"y":666,"label":"4","role":null},"v14":{"x":746,"y":270,"label":"1","role":null},"v15":{"x":746,"y":450,"label":"2","role":null},"v16":{"x":746,"y":630,"label":"3","role":null},"s":{"x":910,"y":450,"label":"s","role":"start"}},"edges":[["v1","v3",1],["v1","v4",0],["v2","v4",1],["v2","v5",0],["v2","v3",1],["v3","v6",0],["v4","v6",1],["v5","v6",1],["v5","v7",0],["v5","v8",0],["v5","v9",1],["v6","v10",1],["v7","v10",1],["v8","v10",1],["v8","v11",0],["v9","v11",1],["v9","v12",1],["v9","v13",0],["v10","v14",0],["v11","v14",0],["v11","v15",0],["v11","v16",1],["v12","v16",0],["v13","v16",1],["v10","v15",0],["v12","v14",0],["v14","s",0],["v15","s",0],["v16","s",1],["v1","v2",0],["v3","v4",0],["v4","v5",0],["v6","v7",1],["v7","v8",0],["v8","v9",0],["v10","v11",1],["v11","v12",0],["v12","v13",0],["v14","v15",1],["v15","v16",0]],"start":"s","goal":null,"_optimal":16},{"name":"Level 23","vertices":{"s":{"x":90,"y":330,"label":"s","role":"start"},"v2":{"x":90,"y":570,"label":"2","role":null},"v3":{"x":254,"y":270,"label":"1","role":null},"v4":{"x":254,"y":450,"label":"2","role":null},"v5":{"x":254,"y":630,"label":"3","role":null},"v6":{"x":418,"y":450,"label":"1","role":null},"v7":{"x":582,"y":234,"label":"1","role":null},"v8":{"x":582,"y":378,"label":"2","role":null},"v9":{"x":582,"y":522,"label":"3","role":null},"v10":{"x":582,"y":666,"label":"4","role":null},"v11":{"x":746,"y":270,"label":"1","role":null},"v12":{"x":746,"y":450,"label":"2","role":null},"v13":{"x":746,"y":630,"label":"3","role":null},"v14":{"x":910,"y":234,"label":"1","role":null},"v15":{"x":910,"y":378,"label":"2","role":null},"v16":{"x":910,"y":522,"label":"3","role":null},"v17":{"x":910,"y":666,"label":"4","role":null}},"edges":[["s","v3",0],["v2","v3",0],["v2","v4",0],["v2","v5",0],["s","v4",1],["v3","v6",0],["v4","v6",0],["v5","v6",1],["v6","v7",0],["v6","v8",0],["v6","v9",0],["v6","v10",1],["v7","v11",0],["v8","v11",0],["v9","v11",1],["v10","v11",1],["v10","v12",0],["v10","v13",0],["v9","v12",1],["v11","v14",0],["v12","v14",0],["v13","v14",1],["v13","v15",1],["v13","v16",1],["v13","v17",0],["s","v2",0],["v4","v5",0],["v7","v8",0],["v8","v9",0],["v9","v10",1],["v11","v12",0],["v12","v13",1],["v14","v15",0],["v15","v16",0],["v16","v17",0]],"start":"s","goal":null,"_optimal":16},{"name":"Level 24","vertices":{"v1":{"x":90,"y":270,"label":"1","role":null},"v2":{"x":90,"y":450,"label":"2","role":null},"v3":{"x":90,"y":630,"label":"3","role":null},"v4":{"x":254,"y":234,"label":"1","role":null},"s":{"x":254,"y":378,"label":"s","role":"start"},"v6":{"x":254,"y":522,"label":"3","role":null},"v7":{"x":254,"y":666,"label":"4","role":null},"v8":{"x":418,"y":270,"label":"1","role":null},"v9":{"x":418,"y":450,"label":"2","role":null},"v10":{"x":418,"y":630,"label":"3","role":null},"v11":{"x":582,"y":330,"label":"1","role":null},"v12":{"x":582,"y":570,"label":"2","role":null},"v13":{"x":746,"y":330,"label":"1","role":null},"v14":{"x":746,"y":570,"label":"2","role":null},"v15":{"x":910,"y":234,"label":"1","role":null},"v16":{"x":910,"y":378,"label":"2","role":null},"v17":{"x":910,"y":522,"label":"3","role":null},"v18":{"x":910,"y":666,"label":"4","role":null}},"edges":[["v1","v4",0],["v1","s",1],["v2","s",0],["v3","s",0],["v3","v6",1],["v3","v7",0],["v2","v7",0],["v4","v8",0],["v4","v9",1],["s","v9",0],["v6","v9",0],["v6","v10",0],["v7","v10",0],["v8","v11",0],["v8","v12",0],["v9","v12",0],["v10","v12",1],["v11","v13",0],["v11","v14",1],["v12","v14",0],["v13","v15",0],["v14","v15",1],["v14","v16",0],["v14","v17",0],["v14","v18",0],["v1","v2",1],["v2","v3",0],["v4","s",1],["s","v6",1],["v6","v7",1],["v8","v9",1],["v9","v10",0],["v11","v12",0],["v13","v14",1],["v15","v16",0],["v16","v17",0],["v17","v18",0]],"start":"s","goal":null,"_optimal":17},{"name":"Level 25","vertices":{"v1":{"x":90,"y":270,"label":"1","role":null},"v2":{"x":90,"y":450,"label":"2","role":null},"v3":{"x":90,"y":630,"label":"3","role":null},"v4":{"x":254,"y":270,"label":"1","role":null},"v5":{"x":254,"y":450,"label":"2","role":null},"v6":{"x":254,"y":630,"label":"3","role":null},"s":{"x":418,"y":330,"label":"s","role":"start"},"v8":{"x":418,"y":570,"label":"2","role":null},"v9":{"x":582,"y":270,"label":"1","role":null},"v10":{"x":582,"y":450,"label":"2","role":null},"v11":{"x":582,"y":630,"label":"3","role":null},"v12":{"x":746,"y":234,"label":"1","role":null},"v13":{"x":746,"y":378,"label":"2","role":null},"v14":{"x":746,"y":522,"label":"3","role":null},"v15":{"x":746,"y":666,"label":"4","role":null},"v16":{"x":910,"y":234,"label":"1","role":null},"v17":{"x":910,"y":378,"label":"2","role":null},"v18":{"x":910,"y":522,"label":"3","role":null},"v19":{"x":910,"y":666,"label":"4","role":null}},"edges":[["v1","v4",0],["v1","v5",1],["v1","v6",0],["v2","v6",0],["v3","v6",0],["v4","s",1],["v4","v8",1],["v5","v8",0],["v6","v8",0],["v6","s",0],["s","v9",0],["v8","v9",0],["v8","v10",1],["v8","v11",0],["v9","v12",1],["v10","v12",0],["v10","v13",0],["v11","v13",0],["v11","v14",0],["v11","v15",0],["v10","v14",0],["v12","v16",0],["v12","v17",0],["v12","v18",0],["v13","v18",0],["v13","v19",1],["v14","v19",1],["v15","v19",0],["v1","v2",0],["v2","v3",0],["v4","v5",1],["v5","v6",0],["s","v8",0],["v9","v10",0],["v10","v11",0],["v12","v13",0],["v16","v17",0],["v17","v18",0],["v18","v19",0]],"start":"s","goal":null,"_optimal":18},{"name":"Level 26","vertices":{"v1":{"x":90,"y":234,"label":"1","role":null},"v2":{"x":90,"y":378,"label":"2","role":null},"v3":{"x":90,"y":522,"label":"3","role":null},"v4":{"x":90,"y":666,"label":"4","role":null},"v5":{"x":295,"y":234,"label":"1","role":null},"v6":{"x":295,"y":378,"label":"2","role":null},"v7":{"x":295,"y":522,"label":"3","role":null},"v8":{"x":295,"y":666,"label":"4","role":null},"v9":{"x":500,"y":234,"label":"1","role":null},"s":{"x":500,"y":378,"label":"s","role":"start"},"v11":{"x":500,"y":522,"label":"3","role":null},"v12":{"x":500,"y":666,"label":"4","role":null},"v13":{"x":705,"y":234,"label":"1","role":null},"v14":{"x":705,"y":378,"label":"2","role":null},"v15":{"x":705,"y":522,"label":"3","role":null},"v16":{"x":705,"y":666,"label":"4","role":null},"v17":{"x":910,"y":234,"label":"1","role":null},"v18":{"x":910,"y":378,"label":"2","role":null},"v19":{"x":910,"y":522,"label":"3","role":null},"v20":{"x":910,"y":666,"label":"4","role":null}},"edges":[["v1","v5",0],["v2","v5",0],["v3","v5",0],["v4","v5",0],["v4","v6",1],["v4","v7",0],["v4","v8",0],["v3","v6",0],["v3","v7",0],["v5","v9",1],["v6","v9",0],["v6","s",1],["v7","s",1],["v7","v11",0],["v7","v12",0],["v8","v12",0],["v5","v12",1],["v9","v13",0],["v9","v14",0],["v9","v15",0],["v9","v16",1],["s","v16",1],["v11","v16",1],["v12","v16",0],["v13","v17",1],["v14","v17",0],["v14","v18",1],["v15","v18",0],["v15","v19",0],["v16","v19",0],["v16","v20",0],["v15","v17",0],["v1","v2",0],["v2","v3",0],["v5","v6",1],["v6","v7",1],["v7","v8",0],["v9","s",0],["s","v11",1],["v11","v12",1],["v13","v14",0],["v14","v15",1],["v15","v16",0],["v17","v18",0],["v18","v19",1],["v19","v20",0]],"start":"s","goal":null,"_optimal":19},{"name":"Level 27","vertices":{"v1":{"x":90,"y":270,"label":"1","role":null},"v2":{"x":90,"y":450,"label":"2","role":null},"v3":{"x":90,"y":630,"label":"3","role":null},"v4":{"x":254,"y":234,"label":"1","role":null},"v5":{"x":254,"y":378,"label":"2","role":null},"v6":{"x":254,"y":522,"label":"3","role":null},"v7":{"x":254,"y":666,"label":"4","role":null},"v8":{"x":418,"y":330,"label":"1","role":null},"v9":{"x":418,"y":570,"label":"2","role":null},"v10":{"x":582,"y":234,"label":"1","role":null},"v11":{"x":582,"y":378,"label":"2","role":null},"v12":{"x":582,"y":522,"label":"3","role":null},"v13":{"x":582,"y":666,"label":"4","role":null},"v14":{"x":746,"y":270,"label":"1","role":null},"v15":{"x":746,"y":450,"label":"2","role":null},"v16":{"x":746,"y":630,"label":"3","role":null},"v17":{"x":910,"y":234,"label":"1","role":null},"v18":{"x":910,"y":378,"label":"2","role":null},"v19":{"x":910,"y":522,"label":"3","role":null},"s":{"x":910,"y":666,"label":"s","role":"start"}},"edges":[["v1","v4",1],["v1","v5",1],["v1","v6",0],["v1","v7",0],["v2","v7",0],["v3","v7",1],["v4","v8",0],["v4","v9",1],["v5","v9",0],["v6","v9",0],["v7","v9",1],["v8","v10",0],["v9","v10",1],["v9","v11",1],["v9","v12",1],["v9","v13",1],["v10","v14",1],["v11","v14",1],["v11","v15",1],["v11","v16",0],["v12","v16",0],["v13","v16",0],["v13","v15",0],["v14","v17",0],["v14","v18",0],["v15","v18",0],["v16","v18",0],["v16","v19",1],["v16","s",0],["v14","s",0],["v1","v2",1],["v2","v3",0],["v4","v5",0],["v5","v6",1],["v6","v7",0],["v8","v9",1],["v10","v11",0],["v11","v12",0],["v12","v13",0],["v14","v15",0],["v15","v16",1],["v17","v18",0],["v18","v19",0],["v19","s",1]],"start":"s","goal":null,"_optimal":19},{"name":"Level 28","vertices":{"v1":{"x":90,"y":234,"label":"1","role":null},"v2":{"x":90,"y":378,"label":"2","role":null},"v3":{"x":90,"y":522,"label":"3","role":null},"v4":{"x":90,"y":666,"label":"4","role":null},"v5":{"x":295,"y":234,"label":"1","role":null},"v6":{"x":295,"y":378,"label":"2","role":null},"v7":{"x":295,"y":522,"label":"3","role":null},"v8":{"x":295,"y":666,"label":"4","role":null},"v9":{"x":500,"y":234,"label":"1","role":null},"v10":{"x":500,"y":378,"label":"2","role":null},"s":{"x":500,"y":522,"label":"s","role":"start"},"v12":{"x":500,"y":666,"label":"4","role":null},"v13":{"x":705,"y":234,"label":"1","role":null},"v14":{"x":705,"y":378,"label":"2","role":null},"v15":{"x":705,"y":522,"label":"3","role":null},"v16":{"x":705,"y":666,"label":"4","role":null},"v17":{"x":910,"y":234,"label":"1","role":null},"v18":{"x":910,"y":378,"label":"2","role":null},"v19":{"x":910,"y":522,"label":"3","role":null},"v20":{"x":910,"y":666,"label":"4","role":null}},"edges":[["v1","v5",0],["v1","v6",0],["v1","v7",1],["v1","v8",0],["v2","v8",1],["v3","v8",0],["v4","v8",1],["v2","v6",0],["v3","v6",1],["v4","v5",1],["v4","v6",0],["v5","v9",1],["v5","v10",0],["v5","s",0],["v5","v12",1],["v6","v12",0],["v7","v12",0],["v8","v12",1],["v7","v9",0],["v9","v13",0],["v9","v14",0],["v10","v14",0],["v10","v15",1],["v10","v16",0],["s","v16",0],["v12","v16",1],["v9","v16",0],["v13","v17",0],["v13","v18",1],["v14","v18",0],["v14","v19",0],["v15","v19",1],["v15","v20",0],["v16","v20",0],["v13","v20",0],["v14","v20",0],["v15","v17",0],["v16","v19",0],["v1","v2",0],["v2","v3",0],["v5","v6",1],["v6","v7",1],["v7","v8",1],["v9","v10",1],["v10","s",1],["s","v12",1],["v13","v14",1],["v14","v15",1],["v15","v16",1],["v17","v18",0],["v19","v20",0]],"start":"s","goal":null,"_optimal":19},{"name":"Level 29","vertices":{"v1":{"x":90,"y":234,"label":"1","role":null},"v2":{"x":90,"y":378,"label":"2","role":null},"v3":{"x":90,"y":522,"label":"3","role":null},"v4":{"x":90,"y":666,"label":"4","role":null},"v5":{"x":254,"y":270,"label":"1","role":null},"v6":{"x":254,"y":450,"label":"2","role":null},"v7":{"x":254,"y":630,"label":"3","role":null},"v8":{"x":418,"y":234,"label":"1","role":null},"s":{"x":418,"y":378,"label":"s","role":"start"},"v10":{"x":418,"y":522,"label":"3","role":null},"v11":{"x":418,"y":666,"label":"4","role":null},"v12":{"x":582,"y":270,"label":"1","role":null},"v13":{"x":582,"y":450,"label":"2","role":null},"v14":{"x":582,"y":630,"label":"3","role":null},"v15":{"x":746,"y":330,"label":"1","role":null},"v16":{"x":746,"y":570,"label":"2","role":null},"v17":{"x":910,"y":234,"label":"1","role":null},"v18":{"x":910,"y":378,"label":"2","role":null},"v19":{"x":910,"y":522,"label":"3","role":null},"v20":{"x":910,"y":666,"label":"4","role":null}},"edges":[["v1","v5",0],["v1","v6",0],["v2","v6",0],["v2","v7",0],["v3","v7",0],["v4","v7",0],["v5","v8",0],["v6","v8",0],["v7","v8",1],["v7","s",1],["v7","v10",0],["v7","v11",0],["v8","v12",1],["s","v12",0],["v10","v12",0],["v10","v13",0],["v10","v14",0],["v11","v14",0],["v12","v15",0],["v13","v15",1],["v14","v15",0],["v14","v16",0],["v15","v17",0],["v16","v17",0],["v16","v18",0],["v16","v19",1],["v16","v20",0],["v15","v19",0],["v1","v2",1],["v2","v3",0],["v3","v4",0],["v5","v6",0],["v8","s",1],["s","v10",1],["v10","v11",1],["v12","v13",0],["v13","v14",1],["v15","v16",1],["v17","v18",1],["v18","v19",0],["v19","v20",0]],"start":"s","goal":null,"_optimal":19},{"name":"Level 30","vertices":{"v1":{"x":90,"y":234,"label":"1","role":null},"v2":{"x":90,"y":378,"label":"2","role":null},"v3":{"x":90,"y":522,"label":"3","role":null},"v4":{"x":90,"y":666,"label":"4","role":null},"v5":{"x":254,"y":330,"label":"1","role":null},"v6":{"x":254,"y":570,"label":"2","role":null},"v7":{"x":418,"y":234,"label":"1","role":null},"v8":{"x":418,"y":378,"label":"2","role":null},"v9":{"x":418,"y":522,"label":"3","role":null},"v10":{"x":418,"y":666,"label":"4","role":null},"s":{"x":582,"y":234,"label":"s","role":"start"},"v12":{"x":582,"y":378,"label":"2","role":null},"v13":{"x":582,"y":522,"label":"3","role":null},"v14":{"x":582,"y":666,"label":"4","role":null},"v15":{"x":746,"y":270,"label":"1","role":null},"v16":{"x":746,"y":450,"label":"2","role":null},"v17":{"x":746,"y":630,"label":"3","role":null},"v18":{"x":910,"y":234,"label":"1","role":null},"v19":{"x":910,"y":378,"label":"2","role":null},"v20":{"x":910,"y":522,"label":"3","role":null},"v21":{"x":910,"y":666,"label":"4","role":null}},"edges":[["v1","v5",0],["v1","v6",0],["v2","v6",0],["v3","v6",0],["v4","v6",1],["v5","v7",0],["v6","v7",1],["v6","v8",1],["v6","v9",1],["v6","v10",0],["v7","s",1],["v7","v12",0],["v7","v13",0],["v8","v13",0],["v8","v14",0],["v9","v14",0],["v10","v14",1],["s","v15",1],["s","v16",1],["v12","v16",0],["v13","v16",0],["v13","v17",0],["v14","v17",0],["v12","v15",1],["v15","v18",0],["v15","v19",1],["v15","v20",1],["v15","v21",1],["v16","v21",0],["v17","v21",1],["v1","v2",0],["v2","v3",0],["v3","v4",0],["v5","v6",0],["v7","v8",1],["v8","v9",0],["v9","v10",0],["v12","v13",0],["v13","v14",1],["v15","v16",1],["v16","v17",0],["v18","v19",0],["v19","v20",0],["v20","v21",0]],"start":"s","goal":null,"_optimal":20}];
+const PRESETS_ALL = [{"name":"Level 1","vertices":{"s":{"x":400,"y":100,"label":"s","role":"start"},"v1":{"x":315,"y":250,"label":"1","role":null},"v2":{"x":485,"y":250,"label":"2","role":null},"v3":{"x":230,"y":400,"label":"3","role":null},"v4":{"x":400,"y":400,"label":"4","role":null},"v5":{"x":570,"y":400,"label":"5","role":null}},"edges":[["s","v2",1],["v1","v2",0],["v1","v3",0],["v3","v4",0],["v4","v5",0],["s","v1",1],["v1","v4",0],["v2","v4",0],["v2","v5",1]],"start":"s","goal":null},{"name":"Level 2","vertices":{"v1":{"x":100,"y":100,"label":"1","role":null},"s":{"x":270,"y":100,"label":"s","role":"start"},"v2":{"x":440,"y":100,"label":"2","role":null},"v3":{"x":100,"y":270,"label":"3","role":null},"v4":{"x":270,"y":270,"label":"4","role":null},"v5":{"x":440,"y":270,"label":"5","role":null},"v6":{"x":100,"y":440,"label":"6","role":null},"v7":{"x":270,"y":440,"label":"7","role":null},"v8":{"x":440,"y":440,"label":"8","role":null}},"edges":[["s","v2",1],["v2","v4",0],["v1","v4",0],["v1","v3",0],["v3","v6",0],["v6","v7",0],["v5","v7",0],["v5","v8",0],["v4","v6",0],["v1","s",1],["v2","v5",0],["v4","v5",0],["v3","v4",0],["s","v4",1],["v7","v8",1],["v4","v7",1]],"start":"s","goal":null},{"name":"Level 3","vertices":{"v1":{"x":400,"y":290,"label":"1","role":null},"v2":{"x":505,"y":366,"label":"2","role":null},"v3":{"x":465,"y":489,"label":"3","role":null},"v4":{"x":335,"y":489,"label":"4","role":null},"v5":{"x":295,"y":366,"label":"5","role":null},"v6":{"x":400,"y":150,"label":"6","role":null},"s":{"x":638,"y":323,"label":"s","role":"start"},"v7":{"x":547,"y":602,"label":"7","role":null},"v8":{"x":253,"y":602,"label":"8","role":null},"v9":{"x":162,"y":323,"label":"9","role":null}},"edges":[["v3","s",1],["v1","v3",0],["v1","v5",0],["v4","v5",0],["v4","v7",0],["v7","v8",0],["v8","v9",0],["v6","v9",0],["v2","v6",0],["v3","v5",0],["v3","v7",0],["v5","v6",0],["v5","v8",0],["v1","v6",0],["v5","v9",0],["v6","s",1],["s","v7",1],["v2","v3",1],["v1","v2",1],["v3","v4",1]],"start":"s","goal":null},{"name":"Level 4","vertices":{"v1":{"x":100,"y":100,"label":"1","role":null},"v2":{"x":270,"y":100,"label":"2","role":null},"v3":{"x":440,"y":100,"label":"3","role":null},"v4":{"x":610,"y":100,"label":"4","role":null},"v5":{"x":100,"y":270,"label":"5","role":null},"v6":{"x":270,"y":270,"label":"6","role":null},"v7":{"x":440,"y":270,"label":"7","role":null},"v8":{"x":610,"y":270,"label":"8","role":null},"v9":{"x":100,"y":440,"label":"9","role":null},"v10":{"x":270,"y":440,"label":"10","role":null},"v11":{"x":440,"y":440,"label":"11","role":null},"s":{"x":610,"y":440,"label":"s","role":"start"}},"edges":[["v11","s",1],["v6","v11",0],["v6","v10",0],["v9","v10",0],["v5","v9",0],["v1","v5",0],["v1","v2",0],["v2","v7",0],["v3","v7",0],["v3","v8",0],["v4","v8",0],["v5","v10",0],["v7","v11",0],["v8","s",1],["v2","v6",0],["v10","v11",0],["v2","v3",0],["v8","v11",0],["v5","v6",0],["v2","v5",0],["v3","v4",1],["v7","v8",1],["v6","v7",1]],"start":"s","goal":null},{"name":"Level 5","vertices":{"v1":{"x":100,"y":100,"label":"1","role":null},"v2":{"x":270,"y":100,"label":"2","role":null},"v3":{"x":440,"y":100,"label":"3","role":null},"v4":{"x":610,"y":100,"label":"4","role":null},"v5":{"x":185,"y":250,"label":"5","role":null},"v6":{"x":355,"y":250,"label":"6","role":null},"v7":{"x":525,"y":250,"label":"7","role":null},"v8":{"x":695,"y":250,"label":"8","role":null},"v9":{"x":100,"y":400,"label":"9","role":null},"v10":{"x":270,"y":400,"label":"10","role":null},"s":{"x":440,"y":400,"label":"s","role":"start"},"v11":{"x":610,"y":400,"label":"11","role":null}},"edges":[["v7","s",1],["v7","v11",0],["v8","v11",0],["v4","v8",0],["v3","v4",0],["v3","v6",0],["v6","v10",0],["v9","v10",0],["v5","v9",0],["v2","v5",0],["v1","v2",0],["v6","s",1],["v7","v8",0],["v4","v7",0],["v3","v7",0],["v10","s",1],["v5","v10",0],["v2","v6",0],["v6","v7",0],["v2","v3",0],["v1","v5",1],["v5","v6",1]],"start":"s","goal":null},{"name":"Level 6","vertices":{"v1":{"x":400,"y":280,"label":"1","role":null},"v2":{"x":504,"y":340,"label":"2","role":null},"v3":{"x":504,"y":460,"label":"3","role":null},"v4":{"x":400,"y":520,"label":"4","role":null},"s":{"x":296,"y":460,"label":"s","role":"start"},"v5":{"x":296,"y":340,"label":"5","role":null},"v6":{"x":530,"y":175,"label":"6","role":null},"v7":{"x":660,"y":400,"label":"7","role":null},"v8":{"x":530,"y":625,"label":"8","role":null},"v9":{"x":270,"y":625,"label":"9","role":null},"v10":{"x":140,"y":400,"label":"10","role":null},"v11":{"x":270,"y":175,"label":"11","role":null}},"edges":[["s","v10",1],["v5","v10",0],["v5","v11",0],["v1","v11",0],["v1","v3",0],["v2","v3",0],["v2","v6",0],["v6","v7",0],["v7","v8",0],["v8","v9",0],["v4","v9",0],["v1","v5",0],["v3","v5",0],["v9","v10",0],["s","v5",1],["v3","v8",0],["v6","v11",0],["v1","v6",0],["s","v9",1],["v3","s",1],["v3","v4",1],["v4","v8",1],["v1","v2",1],["v2","v7",1],["v10","v11",1],["v3","v7",1]],"start":"s","goal":null},{"name":"Level 7","vertices":{"v1":{"x":217,"y":588,"label":"1","role":null},"v2":{"x":495,"y":580,"label":"2","role":null},"v3":{"x":727,"y":138,"label":"3","role":null},"v4":{"x":814,"y":356,"label":"4","role":null},"v5":{"x":217,"y":300,"label":"5","role":null},"v6":{"x":488,"y":298,"label":"6","role":null},"v7":{"x":900,"y":223,"label":"7","role":null},"v8":{"x":345,"y":484,"label":"8","role":null},"s":{"x":950,"y":641,"label":"s","role":"start"},"v9":{"x":727,"y":513,"label":"9","role":null},"v10":{"x":341,"y":157,"label":"10","role":null},"v11":{"x":581,"y":440,"label":"11","role":null}},"edges":[["s","v9",1],["v2","v9",0],["v2","v11",0],["v4","v11",0],["v4","v7",0],["v3","v7",0],["v3","v6",0],["v6","v10",0],["v5","v10",0],["v1","v5",0],["v1","v8",0],["v4","s",1],["v3","v4",0],["v2","v6",0],["v1","v2",0],["v9","v11",0],["v5","v6",0],["v4","v9",0],["v5","v8",1],["v8","v11",1]],"start":"s","goal":null},{"name":"Level 8","vertices":{"s":{"x":939,"y":561,"label":"s","role":"start"},"v1":{"x":675,"y":500,"label":"1","role":null},"v2":{"x":381,"y":505,"label":"2","role":null},"v3":{"x":803,"y":196,"label":"3","role":null},"v4":{"x":100,"y":452,"label":"4","role":null},"v5":{"x":321,"y":277,"label":"5","role":null},"v6":{"x":678,"y":302,"label":"6","role":null},"v7":{"x":625,"y":125,"label":"7","role":null},"v8":{"x":923,"y":328,"label":"8","role":null},"v9":{"x":411,"y":128,"label":"9","role":null},"v10":{"x":201,"y":115,"label":"10","role":null},"v11":{"x":138,"y":285,"label":"11","role":null},"v12":{"x":173,"y":605,"label":"12","role":null}},"edges":[["s","v1",1],["v1","v6",0],["v6","v8",0],["v3","v8",0],["v3","v7",0],["v7","v9",0],["v5","v9",0],["v2","v5",0],["v2","v12",0],["v4","v12",0],["v4","v11",0],["v10","v11",0],["v5","v11",0],["v6","v7",0],["v9","v11",0],["v2","v4",0],["v6","v9",0],["v1","v2",0],["v3","v6",0],["s","v8",1],["v5","v10",1],["v9","v10",1],["v1","v8",1]],"start":"s","goal":null},{"name":"Level 9","vertices":{"v1":{"x":677,"y":367,"label":"1","role":null},"v2":{"x":265,"y":141,"label":"2","role":null},"v3":{"x":964,"y":612,"label":"3","role":null},"v4":{"x":391,"y":630,"label":"4","role":null},"v5":{"x":923,"y":190,"label":"5","role":null},"v6":{"x":363,"y":469,"label":"6","role":null},"v7":{"x":648,"y":126,"label":"7","role":null},"s":{"x":224,"y":584,"label":"s","role":"start"},"v8":{"x":643,"y":563,"label":"8","role":null},"v9":{"x":924,"y":378,"label":"9","role":null},"v10":{"x":511,"y":218,"label":"10","role":null},"v11":{"x":178,"y":287,"label":"11","role":null},"v12":{"x":792,"y":621,"label":"12","role":null},"v13":{"x":123,"y":453,"label":"13","role":null}},"edges":[["v4","s",1],["v4","v6",0],["v6","v13",0],["v11","v13",0],["v2","v11",0],["v2","v10",0],["v1","v10",0],["v1","v8",0],["v8","v12",0],["v3","v12",0],["v3","v9",0],["v5","v9",0],["v5","v7",0],["v4","v8",0],["v6","s",1],["v9","v12",0],["v6","v10",0],["v1","v5",0],["v6","v8",0],["s","v13",1],["v6","v11",0],["s","v11",1],["v7","v10",1],["v1","v7",1],["v1","v9",1]],"start":"s","goal":null},{"name":"Level 10","vertices":{"v1":{"x":293,"y":407,"label":"1","role":null},"s":{"x":898,"y":718,"label":"s","role":"start"},"v2":{"x":570,"y":793,"label":"2","role":null},"v3":{"x":246,"y":599,"label":"3","role":null},"v4":{"x":690,"y":375,"label":"4","role":null},"v5":{"x":242,"y":186,"label":"5","role":null},"v6":{"x":882,"y":197,"label":"6","role":null},"v7":{"x":448,"y":550,"label":"7","role":null},"v8":{"x":405,"y":228,"label":"8","role":null},"v9":{"x":845,"y":448,"label":"9","role":null},"v10":{"x":725,"y":118,"label":"10","role":null},"v11":{"x":728,"y":616,"label":"11","role":null},"v12":{"x":181,"y":782,"label":"12","role":null},"v13":{"x":106,"y":371,"label":"13","role":null},"v14":{"x":364,"y":754,"label":"14","role":null},"v15":{"x":542,"y":106,"label":"15","role":null}},"edges":[["s","v11",1],["v4","v11",0],["v4","v9",0],["v6","v9",0],["v6","v10",0],["v10","v15",0],["v5","v15",0],["v5","v8",0],["v1","v8",0],["v1","v7",0],["v2","v7",0],["v2","v14",0],["v12","v14",0],["v3","v12",0],["v3","v13",0],["v7","v14",0],["v4","v15",0],["v2","v11",0],["v4","v10",0],["v4","v6",0],["v3","v14",0],["v1","v5",0],["s","v9",1],["v3","v7",0],["v1","v3",0],["v5","v13",1],["v1","v13",1],["v8","v15",1]],"start":"s","goal":null},{"name":"Level 11","vertices":{"v1":{"x":684,"y":551,"label":"1","role":null},"v2":{"x":196,"y":537,"label":"2","role":null},"v3":{"x":918,"y":569,"label":"3","role":null},"s":{"x":169,"y":157,"label":"s","role":"start"},"v4":{"x":434,"y":607,"label":"4","role":null},"v5":{"x":297,"y":270,"label":"5","role":null},"v6":{"x":922,"y":126,"label":"6","role":null},"v7":{"x":931,"y":319,"label":"7","role":null},"v8":{"x":737,"y":154,"label":"8","role":null},"v9":{"x":792,"y":425,"label":"9","role":null},"v10":{"x":468,"y":193,"label":"10","role":null},"v11":{"x":542,"y":376,"label":"11","role":null},"v12":{"x":342,"y":448,"label":"12","role":null}},"edges":[["s","v10",1],["v10","v12",0],["v5","v12",0],["v2","v5",0],["v2","v4",0],["v1","v4",0],["v1","v11",0],["v9","v11",0],["v8","v9",0],["v6","v8",0],["v6","v7",0],["v3","v7",0],["v10","v11",0],["v7","v9",0],["v4","v11",0],["v8","v10",0],["v4","v12",0],["v11","v12",0],["v2","v12",0],["v5","v11",0],["v8","v11",0],["s","v5",1],["v3","v9",1],["v1","v3",1],["v5","v10",1]],"start":"s","goal":null},{"name":"Level 12","vertices":{"v1":{"x":873,"y":409,"label":"1","role":null},"v2":{"x":234,"y":145,"label":"2","role":null},"v3":{"x":457,"y":710,"label":"3","role":null},"s":{"x":786,"y":795,"label":"s","role":"start"},"v4":{"x":320,"y":358,"label":"4","role":null},"v5":{"x":192,"y":670,"label":"5","role":null},"v6":{"x":856,"y":132,"label":"6","role":null},"v7":{"x":638,"y":494,"label":"7","role":null},"v8":{"x":743,"y":307,"label":"8","role":null},"v9":{"x":498,"y":261,"label":"9","role":null},"v10":{"x":161,"y":469,"label":"10","role":null},"v11":{"x":953,"y":582,"label":"11","role":null},"v12":{"x":116,"y":299,"label":"12","role":null},"v13":{"x":619,"y":705,"label":"13","role":null},"v14":{"x":391,"y":100,"label":"14","role":null},"v15":{"x":389,"y":499,"label":"15","role":null},"v16":{"x":631,"y":126,"label":"16","role":null}},"edges":[["s","v11",1],["v1","v11",0],["v1","v8",0],["v7","v8",0],["v7","v9",0],["v4","v9",0],["v4","v15",0],["v13","v15",0],["v3","v13",0],["v3","v5",0],["v5","v10",0],["v10","v12",0],["v2","v12",0],["v2","v14",0],["v14","v16",0],["v6","v16",0],["v9","v14",0],["s","v13",1],["v4","v10",0],["v8","v16",0],["v2","v4",0],["v4","v12",0],["v10","v15",0],["v3","v7",0],["v1","v7",0],["v2","v9",0],["v3","v15",0],["v9","v16",0],["v1","v6",1],["v6","v8",1],["v5","v15",1],["v4","v14",1],["v9","v15",1]],"start":"s","goal":null},{"name":"Level 13","vertices":{"v1":{"x":664,"y":402,"label":"1","role":null},"s":{"x":126,"y":634,"label":"s","role":"start"},"v2":{"x":841,"y":157,"label":"2","role":null},"v3":{"x":958,"y":323,"label":"3","role":null},"v4":{"x":453,"y":356,"label":"4","role":null},"v5":{"x":283,"y":330,"label":"5","role":null},"v6":{"x":767,"y":536,"label":"6","role":null},"v7":{"x":241,"y":154,"label":"7","role":null},"v8":{"x":680,"y":229,"label":"8","role":null},"v9":{"x":305,"y":567,"label":"9","role":null},"v10":{"x":940,"y":480,"label":"10","role":null},"v11":{"x":111,"y":317,"label":"11","role":null},"v12":{"x":472,"y":563,"label":"12","role":null},"v13":{"x":463,"y":124,"label":"13","role":null},"v14":{"x":926,"y":641,"label":"14","role":null}},"edges":[["s","v9",1],["v9","v11",0],["v5","v11",0],["v5","v12",0],["v1","v12",0],["v1","v6",0],["v6","v14",0],["v10","v14",0],["v3","v10",0],["v2","v3",0],["v2","v8",0],["v8","v13",0],["v4","v13",0],["v4","v7",0],["v1","v10",0],["v4","v5",0],["v1","v8",0],["v1","v4",0],["v4","v12",0],["v3","v8",0],["s","v11",1],["v4","v9",0],["v4","v8",0],["v1","v2",0],["v6","v10",0],["v9","v12",0],["v1","v3",0],["v7","v11",1],["v5","v7",1],["v5","v13",1],["v7","v13",1]],"start":"s","goal":null},{"name":"Level 14","vertices":{"v1":{"x":922,"y":243,"label":"1","role":null},"s":{"x":266,"y":641,"label":"s","role":"start"},"v2":{"x":437,"y":635,"label":"2","role":null},"v3":{"x":707,"y":239,"label":"3","role":null},"v4":{"x":606,"y":582,"label":"4","role":null},"v5":{"x":132,"y":522,"label":"5","role":null},"v6":{"x":496,"y":797,"label":"6","role":null},"v7":{"x":110,"y":350,"label":"7","role":null},"v8":{"x":580,"y":142,"label":"8","role":null},"v9":{"x":894,"y":739,"label":"9","role":null},"v10":{"x":575,"y":396,"label":"10","role":null},"v11":{"x":306,"y":274,"label":"11","role":null},"v12":{"x":712,"y":748,"label":"12","role":null},"v13":{"x":395,"y":102,"label":"13","role":null},"v14":{"x":937,"y":546,"label":"14","role":null},"v15":{"x":133,"y":101,"label":"15","role":null}},"edges":[["s","v2",1],["v2","v4",0],["v4","v10",0],["v10","v11",0],["v5","v11",0],["v5","v7",0],["v7","v15",0],["v13","v15",0],["v8","v13",0],["v3","v8",0],["v1","v3",0],["v1","v14",0],["v9","v14",0],["v9","v12",0],["v6","v12",0],["v3","v10",0],["v8","v10",0],["v2","v10",0],["v2","v12",0],["v8","v11",0],["v7","v11",0],["s","v5",1],["v12","v14",0],["v11","v13",0],["v11","v15",0],["v4","v12",0],["v4","v6",1],["v2","v6",1]],"start":"s","goal":null},{"name":"Level 15","vertices":{"v1":{"x":548,"y":486,"label":"1","role":null},"v2":{"x":970,"y":760,"label":"2","role":null},"v3":{"x":726,"y":245,"label":"3","role":null},"v4":{"x":894,"y":392,"label":"4","role":null},"v5":{"x":1104,"y":649,"label":"5","role":null},"v6":{"x":834,"y":628,"label":"6","role":null},"v7":{"x":196,"y":342,"label":"7","role":null},"v8":{"x":217,"y":513,"label":"8","role":null},"v9":{"x":715,"y":805,"label":"9","role":null},"v10":{"x":595,"y":700,"label":"10","role":null},"v11":{"x":471,"y":261,"label":"11","role":null},"v12":{"x":902,"y":137,"label":"12","role":null},"v13":{"x":259,"y":683,"label":"13","role":null},"s":{"x":369,"y":416,"label":"s","role":"start"},"v14":{"x":1127,"y":277,"label":"14","role":null},"v15":{"x":263,"y":134,"label":"15","role":null},"v16":{"x":405,"y":577,"label":"16","role":null},"v17":{"x":1091,"y":120,"label":"17","role":null},"v18":{"x":540,"y":106,"label":"18","role":null},"v19":{"x":1111,"y":433,"label":"19","role":null}},"edges":[["s","v15",1],["v15","v18",0],["v3","v18",0],["v3","v11",0],["v1","v11",0],["v1","v6",0],["v4","v6",0],["v4","v12",0],["v12","v17",0],["v14","v17",0],["v14","v19",0],["v5","v19",0],["v2","v5",0],["v2","v9",0],["v9","v10",0],["v10","v16",0],["v13","v16",0],["v8","v13",0],["v7","v8",0],["v8","v16",0],["v1","v10",0],["v4","v19",0],["v11","v18",0],["v11","s",1],["v12","v14",0],["v5","v6",0],["v8","s",1],["s","v16",1],["v1","s",1],["v6","v9",0],["v11","v15",0],["v13","s",1],["v2","v6",0],["v1","v16",0],["v6","v10",0],["v4","v14",0],["v7","v16",1],["v7","v15",1],["v3","v12",1],["v3","v4",1]],"start":"s","goal":null},{"name":"Level 16","vertices":{"v1":{"x":274,"y":441,"label":"1","role":null},"v2":{"x":527,"y":296,"label":"2","role":null},"v3":{"x":209,"y":134,"label":"3","role":null},"v4":{"x":655,"y":424,"label":"4","role":null},"v5":{"x":583,"y":580,"label":"5","role":null},"v6":{"x":873,"y":568,"label":"6","role":null},"v7":{"x":832,"y":161,"label":"7","role":null},"v8":{"x":194,"y":626,"label":"8","role":null},"v9":{"x":359,"y":213,"label":"9","role":null},"v10":{"x":849,"y":318,"label":"10","role":null},"s":{"x":120,"y":276,"label":"s","role":"start"},"v11":{"x":502,"y":138,"label":"11","role":null},"v12":{"x":363,"y":583,"label":"12","role":null},"v13":{"x":454,"y":440,"label":"13","role":null},"v14":{"x":663,"y":153,"label":"14","role":null}},"edges":[["v3","s",1],["v3","v11",0],["v11","v14",0],["v7","v14",0],["v4","v7",0],["v4","v13",0],["v2","v13",0],["v2","v9",0],["v1","v9",0],["v1","v8",0],["v8","v12",0],["v5","v12",0],["v5","v6",0],["v6","v10",0],["v4","v5",0],["v4","v14",0],["v1","v12",0],["v5","v13",0],["v12","v13",0],["v9","v11",0],["v2","v11",0],["v4","v6",0],["v8","v13",0],["v1","v13",0],["v9","v13",0],["v1","s",1],["v9","s",1],["v11","v13",0],["v4","v10",1],["v7","v10",1],["v1","v3",1],["v2","v4",1]],"start":"s","goal":null},{"name":"Level 17","vertices":{"v1":{"x":1014,"y":538,"label":"1","role":null},"v2":{"x":189,"y":250,"label":"2","role":null},"v3":{"x":685,"y":499,"label":"3","role":null},"v4":{"x":332,"y":701,"label":"4","role":null},"v5":{"x":129,"y":449,"label":"5","role":null},"s":{"x":1061,"y":195,"label":"s","role":"start"},"v6":{"x":890,"y":322,"label":"6","role":null},"v7":{"x":408,"y":108,"label":"7","role":null},"v8":{"x":856,"y":699,"label":"8","role":null},"v9":{"x":633,"y":687,"label":"9","role":null},"v10":{"x":388,"y":372,"label":"10","role":null},"v11":{"x":744,"y":102,"label":"11","role":null},"v12":{"x":1055,"y":821,"label":"12","role":null},"v13":{"x":454,"y":804,"label":"13","role":null},"v14":{"x":623,"y":269,"label":"14","role":null},"v15":{"x":154,"y":686,"label":"15","role":null},"v16":{"x":452,"y":556,"label":"16","role":null},"v17":{"x":293,"y":504,"label":"17","role":null},"v18":{"x":904,"y":152,"label":"18","role":null}},"edges":[["s","v6",1],["v1","v6",0],["v1","v12",0],["v8","v12",0],["v3","v8",0],["v3","v9",0],["v9","v16",0],["v13","v16",0],["v4","v13",0],["v4","v15",0],["v5","v15",0],["v2","v5",0],["v2","v17",0],["v10","v17",0],["v7","v10",0],["v7","v14",0],["v14","v18",0],["v11","v18",0],["v6","v14",0],["s","v18",1],["v9","v13",0],["v2","v7",0],["v8","v9",0],["v4","v9",0],["v1","v8",0],["v15","v17",0],["v4","v17",0],["v3","v14",0],["v5","v17",0],["v16","v17",0],["v6","v18",0],["v3","v6",0],["v11","v14",1],["v6","v11",1],["v5","v10",1],["v2","v10",1]],"start":"s","goal":null},{"name":"Level 18","vertices":{"v1":{"x":677,"y":598,"label":"1","role":null},"v2":{"x":737,"y":249,"label":"2","role":null},"v3":{"x":873,"y":607,"label":"3","role":null},"v4":{"x":275,"y":716,"label":"4","role":null},"v5":{"x":184,"y":392,"label":"5","role":null},"v6":{"x":279,"y":240,"label":"6","role":null},"v7":{"x":598,"y":755,"label":"7","role":null},"v8":{"x":405,"y":807,"label":"8","role":null},"v9":{"x":135,"y":566,"label":"9","role":null},"s":{"x":451,"y":635,"label":"s","role":"start"},"v10":{"x":581,"y":180,"label":"10","role":null},"v11":{"x":510,"y":405,"label":"11","role":null},"v12":{"x":334,"y":456,"label":"12","role":null},"v13":{"x":884,"y":450,"label":"13","role":null},"v14":{"x":903,"y":762,"label":"14","role":null},"v15":{"x":403,"y":138,"label":"15","role":null},"v16":{"x":819,"y":105,"label":"16","role":null}},"edges":[["v4","s",1],["v4","v8",0],["v7","v8",0],["v1","v7",0],["v1","v11",0],["v11","v12",0],["v9","v12",0],["v5","v9",0],["v5","v6",0],["v6","v15",0],["v10","v15",0],["v10","v16",0],["v2","v16",0],["v2","v13",0],["v3","v13",0],["v3","v14",0],["v6","v11",0],["v11","v15",0],["v5","v12",0],["v6","v10",0],["v2","v10",0],["v3","v7",0],["v4","v9",0],["v2","v11",0],["v1","v3",0],["v10","v11",0],["v7","s",1],["v6","v12",0],["v8","s",1],["v7","v14",1],["v1","v14",1],["v1","v13",1]],"start":"s","goal":null},{"name":"Level 19","vertices":{"v1":{"x":661,"y":159,"label":"1","role":null},"v2":{"x":166,"y":561,"label":"2","role":null},"v3":{"x":1110,"y":350,"label":"3","role":null},"v4":{"x":927,"y":112,"label":"4","role":null},"v5":{"x":1050,"y":707,"label":"5","role":null},"v6":{"x":346,"y":451,"label":"6","role":null},"v7":{"x":303,"y":197,"label":"7","role":null},"v8":{"x":602,"y":575,"label":"8","role":null},"v9":{"x":746,"y":826,"label":"9","role":null},"v10":{"x":807,"y":518,"label":"10","role":null},"v11":{"x":420,"y":697,"label":"11","role":null},"v12":{"x":235,"y":720,"label":"12","role":null},"v13":{"x":902,"y":282,"label":"13","role":null},"v14":{"x":106,"y":369,"label":"14","role":null},"v15":{"x":500,"y":282,"label":"15","role":null},"v16":{"x":1105,"y":157,"label":"16","role":null},"v17":{"x":682,"y":410,"label":"17","role":null},"s":{"x":160,"y":125,"label":"s","role":"start"},"v18":{"x":562,"y":802,"label":"18","role":null},"v19":{"x":862,"y":719,"label":"19","role":null}},"edges":[["v14","s",1],["v6","v14",0],["v6","v7",0],["v7","v15",0],["v8","v15",0],["v8","v17",0],["v1","v17",0],["v1","v4",0],["v4","v16",0],["v3","v16",0],["v3","v13",0],["v10","v13",0],["v5","v10",0],["v5","v19",0],["v9","v19",0],["v9","v18",0],["v11","v18",0],["v11","v12",0],["v2","v12",0],["v1","v15",0],["v3","v4",0],["v6","v12",0],["v8","v19",0],["v8","v11",0],["v8","v18",0],["v9","v10",0],["v7","v14",0],["v6","v8",0],["v8","v9",0],["v10","v17",0],["v1","v13",0],["v8","v10",0],["v18","v19",0],["v4","v13",0],["v10","v19",0],["v7","s",1],["v2","v11",1],["v2","v14",1]],"start":"s","goal":null},{"name":"Level 20","vertices":{"v1":{"x":652,"y":627,"label":"1","role":null},"v2":{"x":828,"y":196,"label":"2","role":null},"v3":{"x":191,"y":163,"label":"3","role":null},"v4":{"x":1131,"y":581,"label":"4","role":null},"v5":{"x":321,"y":295,"label":"5","role":null},"v6":{"x":1135,"y":162,"label":"6","role":null},"v7":{"x":841,"y":482,"label":"7","role":null},"s":{"x":947,"y":345,"label":"s","role":"start"},"v8":{"x":366,"y":643,"label":"8","role":null},"v9":{"x":566,"y":311,"label":"9","role":null},"v10":{"x":437,"y":424,"label":"10","role":null},"v11":{"x":398,"y":144,"label":"11","role":null},"v12":{"x":680,"y":458,"label":"12","role":null},"v13":{"x":169,"y":448,"label":"13","role":null},"v14":{"x":587,"y":145,"label":"14","role":null},"v15":{"x":130,"y":618,"label":"15","role":null},"v16":{"x":982,"y":640,"label":"16","role":null},"v17":{"x":1109,"y":354,"label":"17","role":null}},"edges":[["v7","s",1],["v7","v16",0],["v4","v16",0],["v4","v17",0],["v6","v17",0],["v2","v6",0],["v2","v14",0],["v5","v14",0],["v5","v10",0],["v9","v10",0],["v9","v12",0],["v1","v12",0],["v1","v8",0],["v8","v15",0],["v13","v15",0],["v3","v13",0],["v3","v11",0],["v1","v7",0],["v3","v5",0],["v7","v17",0],["s","v17",1],["v10","v12",0],["v2","s",1],["v9","v14",0],["v8","v13",0],["v6","s",1],["v16","v17",0],["v2","v12",0],["s","v16",1],["v10","v14",0],["v10","v11",1],["v9","v11",1],["v2","v7",1],["v8","v10",1]],"start":"s","goal":null},{"name":"Level 21","vertices":{"v1":{"x":1015,"y":414,"label":"1","role":null},"v2":{"x":838,"y":683,"label":"2","role":null},"v3":{"x":152,"y":346,"label":"3","role":null},"v4":{"x":452,"y":428,"label":"4","role":null},"v5":{"x":164,"y":736,"label":"5","role":null},"s":{"x":213,"y":125,"label":"s","role":"start"},"v6":{"x":754,"y":186,"label":"6","role":null},"v7":{"x":505,"y":793,"label":"7","role":null},"v8":{"x":467,"y":586,"label":"8","role":null},"v9":{"x":622,"y":302,"label":"9","role":null},"v10":{"x":296,"y":510,"label":"10","role":null},"v11":{"x":1137,"y":625,"label":"11","role":null},"v12":{"x":440,"y":138,"label":"12","role":null},"v13":{"x":828,"y":404,"label":"13","role":null},"v14":{"x":964,"y":805,"label":"14","role":null},"v15":{"x":656,"y":718,"label":"15","role":null},"v16":{"x":969,"y":179,"label":"16","role":null},"v17":{"x":645,"y":461,"label":"17","role":null},"v18":{"x":317,"y":769,"label":"18","role":null},"v19":{"x":139,"y":533,"label":"19","role":null}},"edges":[["v3","s",1],["v3","v10",0],["v4","v10",0],["v4","v17",0],["v13","v17",0],["v9","v13",0],["v9","v12",0],["v6","v12",0],["v6","v16",0],["v1","v16",0],["v1","v11",0],["v2","v11",0],["v2","v14",0],["v14","v15",0],["v7","v15",0],["v7","v8",0],["v8","v18",0],["v18","v19",0],["v5","v19",0],["v1","v13",0],["v6","v9",0],["v15","v17",0],["v4","v9",0],["v11","v14",0],["v4","v12",0],["v10","v19",0],["s","v12",1],["v3","v4",0],["v7","v18",0],["v4","v8",0],["v13","v16",0],["v3","v19",0],["v6","v13",0],["v5","v18",1],["v5","v10",1],["v2","v17",1],["v2","v13",1]],"start":"s","goal":null},{"name":"Level 22","vertices":{"v1":{"x":243,"y":324,"label":"1","role":null},"v2":{"x":361,"y":631,"label":"2","role":null},"v3":{"x":835,"y":309,"label":"3","role":null},"v4":{"x":301,"y":112,"label":"4","role":null},"v5":{"x":922,"y":489,"label":"5","role":null},"v6":{"x":924,"y":171,"label":"6","role":null},"v7":{"x":526,"y":234,"label":"7","role":null},"v8":{"x":665,"y":610,"label":"8","role":null},"v9":{"x":128,"y":200,"label":"9","role":null},"v10":{"x":382,"y":413,"label":"10","role":null},"v11":{"x":695,"y":424,"label":"11","role":null},"v12":{"x":679,"y":168,"label":"12","role":null},"v13":{"x":206,"y":590,"label":"13","role":null},"s":{"x":541,"y":390,"label":"s","role":"start"}},"edges":[["v3","s",1],["v3","v12",0],["v6","v12",0],["v5","v6",0],["v5","v11",0],["v8","v11",0],["v2","v8",0],["v2","v10",0],["v7","v10",0],["v4","v7",0],["v4","v9",0],["v1","v9",0],["v1","v13",0],["v11","s",1],["v1","v4",0],["v2","s",1],["v3","v6",0],["v3","v7",0],["v7","v12",0],["v1","v10",0],["v7","s",1],["v3","v11",0],["v8","s",1],["v7","v11",0],["v1","v7",0],["v3","v5",0],["v1","s",1],["v2","v13",1],["v10","v13",1]],"start":"s","goal":null},{"name":"Level 23","vertices":{"v1":{"x":360,"y":399,"label":"1","role":null},"v2":{"x":777,"y":658,"label":"2","role":null},"s":{"x":586,"y":374,"label":"s","role":"start"},"v3":{"x":869,"y":285,"label":"3","role":null},"v4":{"x":1075,"y":600,"label":"4","role":null},"v5":{"x":944,"y":135,"label":"5","role":null},"v6":{"x":233,"y":239,"label":"6","role":null},"v7":{"x":529,"y":622,"label":"7","role":null},"v8":{"x":1111,"y":335,"label":"8","role":null},"v9":{"x":663,"y":125,"label":"9","role":null},"v10":{"x":464,"y":789,"label":"10","role":null},"v11":{"x":973,"y":720,"label":"11","role":null},"v12":{"x":522,"y":221,"label":"12","role":null},"v13":{"x":116,"y":526,"label":"13","role":null},"v14":{"x":247,"y":618,"label":"14","role":null},"v15":{"x":228,"y":784,"label":"15","role":null},"v16":{"x":950,"y":494,"label":"16","role":null},"v17":{"x":1126,"y":116,"label":"17","role":null},"v18":{"x":659,"y":813,"label":"18","role":null},"v19":{"x":687,"y":499,"label":"19","role":null}},"edges":[["s","v7",1],["v7","v10",0],["v10","v18",0],["v18","v19",0],["v3","v19",0],["v3","v16",0],["v2","v16",0],["v2","v11",0],["v4","v11",0],["v4","v8",0],["v8","v17",0],["v5","v17",0],["v5","v9",0],["v9","v12",0],["v1","v12",0],["v1","v6",0],["v6","v13",0],["v13","v14",0],["v14","v15",0],["v1","v14",0],["v2","v18",0],["v4","v16",0],["v5","v8",0],["s","v19",1],["v10","v14",0],["v1","v7",0],["v3","v17",0],["v7","v18",0],["v3","v5",0],["s","v9",1],["v7","v14",0],["v11","v16",0],["v1","v13",0],["v1","s",1],["s","v3",1],["v3","v9",0],["v3","v8",0],["v8","v16",0],["v13","v15",1],["v10","v15",1],["v6","v12",1]],"start":"s","goal":null},{"name":"Level 24","vertices":{"v1":{"x":842,"y":270,"label":"1","role":null},"v2":{"x":118,"y":254,"label":"2","role":null},"v3":{"x":510,"y":405,"label":"3","role":null},"v4":{"x":545,"y":807,"label":"4","role":null},"v5":{"x":924,"y":418,"label":"5","role":null},"v6":{"x":1040,"y":678,"label":"6","role":null},"v7":{"x":203,"y":742,"label":"7","role":null},"v8":{"x":380,"y":718,"label":"8","role":null},"s":{"x":496,"y":236,"label":"s","role":"start"},"v9":{"x":604,"y":617,"label":"9","role":null},"v10":{"x":342,"y":487,"label":"10","role":null},"v11":{"x":1126,"y":254,"label":"11","role":null},"v12":{"x":818,"y":763,"label":"12","role":null},"v13":{"x":150,"y":518,"label":"13","role":null},"v14":{"x":282,"y":196,"label":"14","role":null},"v15":{"x":653,"y":289,"label":"15","role":null},"v16":{"x":1000,"y":101,"label":"16","role":null},"v17":{"x":234,"y":369,"label":"17","role":null},"v18":{"x":837,"y":599,"label":"18","role":null},"v19":{"x":730,"y":125,"label":"19","role":null}},"edges":[["s","v19",1],["v15","v19",0],["v1","v15",0],["v1","v16",0],["v11","v16",0],["v5","v11",0],["v5","v18",0],["v9","v18",0],["v9","v10",0],["v10","v17",0],["v3","v17",0],["v3","v14",0],["v2","v14",0],["v2","v13",0],["v7","v13",0],["v7","v8",0],["v4","v8",0],["v4","v12",0],["v6","v12",0],["v10","v13",0],["v1","v5",0],["v13","v17",0],["v5","v15",0],["s","v15",1],["s","v17",1],["v3","s",1],["v12","v18",0],["v3","v10",0],["v10","v14",0],["v8","v10",0],["v8","v13",0],["v4","v9",0],["s","v14",1],["v7","v10",0],["v16","v19",0],["v9","v12",0],["v8","v9",0],["v6","v18",1],["v5","v6",1],["v2","v17",1],["v1","v11",1]],"start":"s","goal":null},{"name":"Level 25","vertices":{"v1":{"x":787,"y":398,"label":"1","role":null},"v2":{"x":233,"y":818,"label":"2","role":null},"v3":{"x":437,"y":763,"label":"3","role":null},"v4":{"x":398,"y":138,"label":"4","role":null},"v5":{"x":918,"y":186,"label":"5","role":null},"v6":{"x":271,"y":416,"label":"6","role":null},"v7":{"x":158,"y":529,"label":"7","role":null},"v8":{"x":709,"y":697,"label":"8","role":null},"v9":{"x":1043,"y":319,"label":"9","role":null},"v10":{"x":112,"y":307,"label":"10","role":null},"v11":{"x":914,"y":531,"label":"11","role":null},"v12":{"x":702,"y":111,"label":"12","role":null},"v13":{"x":975,"y":695,"label":"13","role":null},"v14":{"x":597,"y":470,"label":"14","role":null},"v15":{"x":387,"y":300,"label":"15","role":null},"v16":{"x":316,"y":623,"label":"16","role":null},"v17":{"x":578,"y":311,"label":"17","role":null},"v18":{"x":1122,"y":584,"label":"18","role":null},"s":{"x":210,"y":144,"label":"s","role":"start"}},"edges":[["v10","s",1],["v10","v15",0],["v14","v15",0],["v14","v17",0],["v4","v17",0],["v4","v12",0],["v5","v12",0],["v5","v9",0],["v1","v9",0],["v1","v11",0],["v11","v18",0],["v13","v18",0],["v8","v13",0],["v3","v8",0],["v2","v3",0],["v2","v16",0],["v6","v16",0],["v6","v7",0],["v1","v5",0],["v8","v11",0],["v6","v10",0],["v1","v8",0],["v14","v16",0],["v12","v17",0],["v4","v15",0],["v9","v18",0],["v1","v14",0],["v1","v17",0],["v3","v16",0],["v15","s",1],["v6","s",1],["v1","v12",0],["v8","v14",0],["v15","v17",0],["v6","v15",0],["v7","v16",1],["v2","v7",1],["v11","v13",1],["v4","v6",1]],"start":"s","goal":null},{"name":"Level 26","vertices":{"v1":{"x":357,"y":279,"label":"1","role":null},"v2":{"x":774,"y":356,"label":"2","role":null},"v3":{"x":948,"y":531,"label":"3","role":null},"v4":{"x":585,"y":141,"label":"4","role":null},"v5":{"x":415,"y":103,"label":"5","role":null},"v6":{"x":808,"y":145,"label":"6","role":null},"s":{"x":638,"y":631,"label":"s","role":"start"},"v7":{"x":1037,"y":216,"label":"7","role":null},"v8":{"x":106,"y":348,"label":"8","role":null},"v9":{"x":461,"y":503,"label":"9","role":null},"v10":{"x":174,"y":547,"label":"10","role":null},"v11":{"x":1092,"y":607,"label":"11","role":null},"v12":{"x":988,"y":366,"label":"12","role":null},"v13":{"x":597,"y":404,"label":"13","role":null},"v14":{"x":344,"y":620,"label":"14","role":null},"v15":{"x":177,"y":146,"label":"15","role":null},"v16":{"x":309,"y":465,"label":"16","role":null},"v17":{"x":793,"y":599,"label":"17","role":null}},"edges":[["s","v17",1],["v13","v17",0],["v2","v13",0],["v2","v3",0],["v3","v11",0],["v11","v12",0],["v7","v12",0],["v6","v7",0],["v4","v6",0],["v4","v5",0],["v1","v5",0],["v1","v9",0],["v9","v14",0],["v10","v14",0],["v10","v16",0],["v8","v16",0],["v8","v15",0],["v3","v12",0],["v2","v6",0],["v9","v16",0],["v2","v7",0],["v2","v12",0],["s","v14",1],["v3","v17",0],["v6","v12",0],["v1","v13",0],["v2","v4",0],["v11","v17",0],["v1","v4",0],["v1","v8",0],["v1","v16",0],["v12","v17",0],["v13","v16",0],["v2","v17",0],["v14","v16",0],["v5","v15",1],["v1","v15",1],["v8","v10",1]],"start":"s","goal":null},{"name":"Level 27","vertices":{"v1":{"x":307,"y":726,"label":"1","role":null},"v2":{"x":268,"y":208,"label":"2","role":null},"v3":{"x":1061,"y":644,"label":"3","role":null},"v4":{"x":840,"y":690,"label":"4","role":null},"s":{"x":639,"y":689,"label":"s","role":"start"},"v5":{"x":102,"y":316,"label":"5","role":null},"v6":{"x":655,"y":521,"label":"6","role":null},"v7":{"x":409,"y":357,"label":"7","role":null},"v8":{"x":578,"y":271,"label":"8","role":null},"v9":{"x":1067,"y":430,"label":"9","role":null},"v10":{"x":392,"y":590,"label":"10","role":null},"v11":{"x":995,"y":267,"label":"11","role":null},"v12":{"x":162,"y":543,"label":"12","role":null},"v13":{"x":109,"y":139,"label":"13","role":null},"v14":{"x":744,"y":303,"label":"14","role":null},"v15":{"x":449,"y":167,"label":"15","role":null},"v16":{"x":478,"y":777,"label":"16","role":null},"v17":{"x":922,"y":548,"label":"17","role":null},"v18":{"x":150,"y":768,"label":"18","role":null},"v19":{"x":871,"y":145,"label":"19","role":null}},"edges":[["s","v10",1],["v7","v10",0],["v6","v7",0],["v6","v14",0],["v14","v17",0],["v4","v17",0],["v3","v4",0],["v3","v9",0],["v9","v11",0],["v11","v19",0],["v8","v19",0],["v8","v15",0],["v2","v15",0],["v2","v13",0],["v5","v13",0],["v5","v12",0],["v12","v18",0],["v1","v18",0],["v1","v16",0],["v3","v17",0],["v10","v12",0],["v6","v8",0],["v1","v10",0],["v11","v14",0],["s","v17",1],["v14","v19",0],["v1","v12",0],["v7","v8",0],["s","v6",1],["v7","v15",0],["v4","s",1],["v7","v12",0],["v2","v5",0],["v8","v14",0],["v2","v7",0],["v9","v17",0],["v2","v8",0],["v11","v17",0],["v10","v16",1],["v6","v16",1],["v5","v7",1]],"start":"s","goal":null},{"name":"Level 28","vertices":{"v1":{"x":513,"y":164,"label":"1","role":null},"v2":{"x":785,"y":748,"label":"2","role":null},"s":{"x":547,"y":338,"label":"s","role":"start"},"v3":{"x":899,"y":102,"label":"3","role":null},"v4":{"x":328,"y":616,"label":"4","role":null},"v5":{"x":981,"y":604,"label":"5","role":null},"v6":{"x":985,"y":324,"label":"6","role":null},"v7":{"x":606,"y":750,"label":"7","role":null},"v8":{"x":303,"y":824,"label":"8","role":null},"v9":{"x":101,"y":402,"label":"9","role":null},"v10":{"x":325,"y":359,"label":"10","role":null},"v11":{"x":807,"y":406,"label":"11","role":null},"v12":{"x":618,"y":541,"label":"12","role":null},"v13":{"x":173,"y":642,"label":"13","role":null},"v14":{"x":1017,"y":823,"label":"14","role":null},"v15":{"x":702,"y":155,"label":"15","role":null},"v16":{"x":137,"y":809,"label":"16","role":null},"v17":{"x":1083,"y":167,"label":"17","role":null},"v18":{"x":227,"y":233,"label":"18","role":null},"v19":{"x":362,"y":122,"label":"19","role":null}},"edges":[["s","v15",1],["v1","v15",0],["v1","v19",0],["v10","v19",0],["v10","v18",0],["v9","v18",0],["v9","v13",0],["v4","v13",0],["v4","v12",0],["v11","v12",0],["v3","v11",0],["v3","v17",0],["v6","v17",0],["v5","v6",0],["v5","v14",0],["v2","v14",0],["v2","v7",0],["v7","v8",0],["v8","v16",0],["v8","v13",0],["v3","v15",0],["v1","s",1],["v6","v11",0],["v1","v18",0],["s","v12",1],["v2","v5",0],["v1","v10",0],["v4","v9",0],["v7","v12",0],["s","v19",1],["v4","v10",0],["v4","v8",0],["v4","v7",0],["v2","v12",0],["s","v10",1],["v3","v6",0],["v9","v10",0],["v13","v16",1],["v4","v16",1],["v18","v19",1]],"start":"s","goal":null},{"name":"Level 29","vertices":{"v1":{"x":841,"y":202,"label":"1","role":null},"v2":{"x":224,"y":154,"label":"2","role":null},"v3":{"x":345,"y":295,"label":"3","role":null},"v4":{"x":1006,"y":685,"label":"4","role":null},"v5":{"x":320,"y":527,"label":"5","role":null},"v6":{"x":845,"y":384,"label":"6","role":null},"v7":{"x":512,"y":167,"label":"7","role":null},"v8":{"x":679,"y":731,"label":"8","role":null},"v9":{"x":517,"y":466,"label":"9","role":null},"v10":{"x":757,"y":524,"label":"10","role":null},"v11":{"x":1136,"y":536,"label":"11","role":null},"s":{"x":474,"y":653,"label":"s","role":"start"},"v12":{"x":835,"y":687,"label":"12","role":null},"v13":{"x":221,"y":748,"label":"13","role":null},"v14":{"x":1076,"y":218,"label":"14","role":null},"v15":{"x":625,"y":347,"label":"15","role":null},"v16":{"x":1111,"y":802,"label":"16","role":null},"v17":{"x":208,"y":390,"label":"17","role":null},"v18":{"x":684,"y":191,"label":"18","role":null},"v19":{"x":995,"y":452,"label":"19","role":null}},"edges":[["s","v13",1],["v5","v13",0],["v3","v5",0],["v3","v15",0],["v6","v15",0],["v6","v10",0],["v9","v10",0],["v8","v9",0],["v8","v12",0],["v12","v16",0],["v11","v16",0],["v4","v11",0],["v4","v19",0],["v14","v19",0],["v1","v14",0],["v1","v18",0],["v7","v18",0],["v2","v7",0],["v2","v17",0],["v9","s",1],["v4","v16",0],["v6","v14",0],["v6","v18",0],["v1","v6",0],["v3","v9",0],["v5","s",1],["v3","v7",0],["v10","s",1],["v9","v15",0],["v4","v10",0],["v10","v12",0],["v8","s",1],["v7","v15",0],["v12","v19",0],["v2","v3",0],["v5","v9",0],["v4","v12",0],["v6","v12",0],["v7","v9",0],["v15","v18",0],["v3","v17",1],["v5","v17",1],["v11","v19",1],["v6","v19",1]],"start":"s","goal":null},{"name":"Level 30","vertices":{"v1":{"x":604,"y":428,"label":"1","role":null},"v2":{"x":285,"y":434,"label":"2","role":null},"v3":{"x":1059,"y":504,"label":"3","role":null},"v4":{"x":439,"y":664,"label":"4","role":null},"s":{"x":1138,"y":784,"label":"s","role":"start"},"v5":{"x":906,"y":158,"label":"5","role":null},"v6":{"x":290,"y":758,"label":"6","role":null},"v7":{"x":1103,"y":126,"label":"7","role":null},"v8":{"x":804,"y":565,"label":"8","role":null},"v9":{"x":666,"y":813,"label":"9","role":null},"v10":{"x":581,"y":217,"label":"10","role":null},"v11":{"x":951,"y":375,"label":"11","role":null},"v12":{"x":256,"y":596,"label":"12","role":null},"v13":{"x":713,"y":120,"label":"13","role":null},"v14":{"x":1116,"y":344,"label":"14","role":null},"v15":{"x":437,"y":493,"label":"15","role":null},"v16":{"x":107,"y":273,"label":"16","role":null},"v17":{"x":970,"y":800,"label":"17","role":null},"v18":{"x":814,"y":292,"label":"18","role":null},"v19":{"x":392,"y":292,"label":"19","role":null}},"edges":[["v3","s",1],["v3","v14",0],["v14","v18",0],["v11","v18",0],["v8","v11",0],["v8","v17",0],["v9","v17",0],["v4","v9",0],["v1","v4",0],["v1","v15",0],["v6","v15",0],["v6","v12",0],["v2","v12",0],["v2","v16",0],["v16","v19",0],["v10","v19",0],["v10","v13",0],["v5","v13",0],["v5","v7",0],["v10","v15",0],["s","v17",1],["v11","v14",0],["v8","v9",0],["v5","v11",0],["v4","v6",0],["v1","v8",0],["v2","v19",0],["v3","v8",0],["v12","v15",0],["v1","v10",0],["v10","v18",0],["v3","v11",0],["v4","v12",0],["v5","v18",0],["v4","v15",0],["v5","v14",0],["v2","v15",0],["v7","v11",1],["v7","v14",1],["v13","v18",1],["v15","v19",1]],"start":"s","goal":null}];
 
 window.PRESETS_GOAL = PRESETS_GOAL;
 window.PRESETS_ALL = PRESETS_ALL;
 
 </script>
 <script>
-// Extra hand-picked small-but-hard levels (same search technique as the
-// project's gen-presets.js, generated offline) — spliced onto the main
-// preset lists after presets.js loads.
-
-window.PRESETS_GOAL = window.PRESETS_GOAL.concat([
-  {
-    "name": "Small Hard 1",
-    "vertices": {
-      "s": {
-        "x": 500,
-        "y": 150,
-        "label": "s",
-        "role": "start"
-      },
-      "v1": {
-        "x": 735,
-        "y": 263,
-        "label": "1",
-        "role": null
-      },
-      "v2": {
-        "x": 792,
-        "y": 517,
-        "label": "2",
-        "role": null
-      },
-      "v3": {
-        "x": 630,
-        "y": 720,
-        "label": "3",
-        "role": null
-      },
-      "v4": {
-        "x": 370,
-        "y": 720,
-        "label": "4",
-        "role": null
-      },
-      "v5": {
-        "x": 208,
-        "y": 517,
-        "label": "5",
-        "role": null
-      },
-      "t": {
-        "x": 265,
-        "y": 263,
-        "label": "t",
-        "role": "goal"
-      }
-    },
-    "edges": [
-      [
-        "s",
-        "v1",
-        0
-      ],
-      [
-        "s",
-        "v5",
-        1
-      ],
-      [
-        "v1",
-        "v2",
-        1
-      ],
-      [
-        "v1",
-        "v3",
-        0
-      ],
-      [
-        "v1",
-        "v4",
-        1
-      ],
-      [
-        "v1",
-        "t",
-        0
-      ],
-      [
-        "v2",
-        "v4",
-        0
-      ],
-      [
-        "v2",
-        "v5",
-        0
-      ],
-      [
-        "v2",
-        "t",
-        1
-      ],
-      [
-        "v3",
-        "v4",
-        0
-      ],
-      [
-        "v3",
-        "v5",
-        1
-      ],
-      [
-        "v4",
-        "v5",
-        1
-      ]
-    ],
-    "start": "s",
-    "goal": "t",
-    "_optimal": 6
-  },
-  {
-    "name": "Small Hard 2",
-    "vertices": {
-      "s": {
-        "x": 500,
-        "y": 150,
-        "label": "s",
-        "role": "start"
-      },
-      "v1": {
-        "x": 735,
-        "y": 263,
-        "label": "1",
-        "role": null
-      },
-      "v2": {
-        "x": 792,
-        "y": 517,
-        "label": "2",
-        "role": null
-      },
-      "v3": {
-        "x": 630,
-        "y": 720,
-        "label": "3",
-        "role": null
-      },
-      "v4": {
-        "x": 370,
-        "y": 720,
-        "label": "4",
-        "role": null
-      },
-      "v5": {
-        "x": 208,
-        "y": 517,
-        "label": "5",
-        "role": null
-      },
-      "t": {
-        "x": 265,
-        "y": 263,
-        "label": "t",
-        "role": "goal"
-      }
-    },
-    "edges": [
-      [
-        "s",
-        "v4",
-        1
-      ],
-      [
-        "v1",
-        "v2",
-        0
-      ],
-      [
-        "v1",
-        "v3",
-        1
-      ],
-      [
-        "v1",
-        "v4",
-        1
-      ],
-      [
-        "v1",
-        "v5",
-        0
-      ],
-      [
-        "v2",
-        "t",
-        0
-      ],
-      [
-        "v3",
-        "v4",
-        0
-      ],
-      [
-        "v3",
-        "v5",
-        0
-      ],
-      [
-        "v3",
-        "t",
-        1
-      ]
-    ],
-    "start": "s",
-    "goal": "t",
-    "_optimal": 6
-  },
-  {
-    "name": "Small Hard 3",
-    "vertices": {
-      "s": {
-        "x": 500,
-        "y": 150,
-        "label": "s",
-        "role": "start"
-      },
-      "v1": {
-        "x": 735,
-        "y": 263,
-        "label": "1",
-        "role": null
-      },
-      "v2": {
-        "x": 792,
-        "y": 517,
-        "label": "2",
-        "role": null
-      },
-      "v3": {
-        "x": 630,
-        "y": 720,
-        "label": "3",
-        "role": null
-      },
-      "v4": {
-        "x": 370,
-        "y": 720,
-        "label": "4",
-        "role": null
-      },
-      "v5": {
-        "x": 208,
-        "y": 517,
-        "label": "5",
-        "role": null
-      },
-      "t": {
-        "x": 265,
-        "y": 263,
-        "label": "t",
-        "role": "goal"
-      }
-    },
-    "edges": [
-      [
-        "s",
-        "v1",
-        0
-      ],
-      [
-        "s",
-        "v2",
-        0
-      ],
-      [
-        "s",
-        "v3",
-        1
-      ],
-      [
-        "s",
-        "t",
-        0
-      ],
-      [
-        "v1",
-        "v2",
-        1
-      ],
-      [
-        "v1",
-        "v4",
-        1
-      ],
-      [
-        "v1",
-        "v5",
-        0
-      ],
-      [
-        "v1",
-        "t",
-        0
-      ],
-      [
-        "v2",
-        "v3",
-        0
-      ],
-      [
-        "v2",
-        "v4",
-        0
-      ],
-      [
-        "v2",
-        "t",
-        1
-      ],
-      [
-        "v3",
-        "t",
-        1
-      ],
-      [
-        "v4",
-        "v5",
-        0
-      ]
-    ],
-    "start": "s",
-    "goal": "t",
-    "_optimal": 6
-  },
-  {
-    "name": "Small Hard 4",
-    "vertices": {
-      "s": {
-        "x": 500,
-        "y": 150,
-        "label": "s",
-        "role": "start"
-      },
-      "v1": {
-        "x": 735,
-        "y": 263,
-        "label": "1",
-        "role": null
-      },
-      "v2": {
-        "x": 792,
-        "y": 517,
-        "label": "2",
-        "role": null
-      },
-      "v3": {
-        "x": 630,
-        "y": 720,
-        "label": "3",
-        "role": null
-      },
-      "v4": {
-        "x": 370,
-        "y": 720,
-        "label": "4",
-        "role": null
-      },
-      "v5": {
-        "x": 208,
-        "y": 517,
-        "label": "5",
-        "role": null
-      },
-      "t": {
-        "x": 265,
-        "y": 263,
-        "label": "t",
-        "role": "goal"
-      }
-    },
-    "edges": [
-      [
-        "s",
-        "v2",
-        0
-      ],
-      [
-        "s",
-        "v3",
-        1
-      ],
-      [
-        "s",
-        "v5",
-        0
-      ],
-      [
-        "v1",
-        "v2",
-        1
-      ],
-      [
-        "v1",
-        "v3",
-        0
-      ],
-      [
-        "v1",
-        "v4",
-        1
-      ],
-      [
-        "v1",
-        "v5",
-        0
-      ],
-      [
-        "v2",
-        "v4",
-        0
-      ],
-      [
-        "v2",
-        "v5",
-        0
-      ],
-      [
-        "v2",
-        "t",
-        1
-      ],
-      [
-        "v3",
-        "t",
-        1
-      ],
-      [
-        "v4",
-        "t",
-        0
-      ]
-    ],
-    "start": "s",
-    "goal": "t",
-    "_optimal": 6
-  },
-  {
-    "name": "Small Hard 5",
-    "vertices": {
-      "s": {
-        "x": 500,
-        "y": 150,
-        "label": "s",
-        "role": "start"
-      },
-      "v1": {
-        "x": 735,
-        "y": 263,
-        "label": "1",
-        "role": null
-      },
-      "v2": {
-        "x": 792,
-        "y": 517,
-        "label": "2",
-        "role": null
-      },
-      "v3": {
-        "x": 630,
-        "y": 720,
-        "label": "3",
-        "role": null
-      },
-      "v4": {
-        "x": 370,
-        "y": 720,
-        "label": "4",
-        "role": null
-      },
-      "v5": {
-        "x": 208,
-        "y": 517,
-        "label": "5",
-        "role": null
-      },
-      "t": {
-        "x": 265,
-        "y": 263,
-        "label": "t",
-        "role": "goal"
-      }
-    },
-    "edges": [
-      [
-        "s",
-        "v3",
-        0
-      ],
-      [
-        "s",
-        "v4",
-        1
-      ],
-      [
-        "s",
-        "t",
-        0
-      ],
-      [
-        "v1",
-        "v3",
-        0
-      ],
-      [
-        "v1",
-        "v5",
-        0
-      ],
-      [
-        "v1",
-        "t",
-        1
-      ],
-      [
-        "v2",
-        "v3",
-        0
-      ],
-      [
-        "v2",
-        "v5",
-        1
-      ],
-      [
-        "v2",
-        "t",
-        0
-      ],
-      [
-        "v4",
-        "v5",
-        0
-      ]
-    ],
-    "start": "s",
-    "goal": "t",
-    "_optimal": 6
-  }
-]);
-
-window.PRESETS_ALL = window.PRESETS_ALL.concat([
-  {
-    "name": "Small Hard 1",
-    "vertices": {
-      "s": {
-        "x": 500,
-        "y": 150,
-        "label": "s",
-        "role": "start"
-      },
-      "v1": {
-        "x": 760,
-        "y": 300,
-        "label": "1",
-        "role": null
-      },
-      "v2": {
-        "x": 760,
-        "y": 600,
-        "label": "2",
-        "role": null
-      },
-      "v3": {
-        "x": 500,
-        "y": 750,
-        "label": "3",
-        "role": null
-      },
-      "v4": {
-        "x": 240,
-        "y": 600,
-        "label": "4",
-        "role": null
-      },
-      "v5": {
-        "x": 240,
-        "y": 300,
-        "label": "5",
-        "role": null
-      }
-    },
-    "edges": [
-      [
-        "s",
-        "v1",
-        1
-      ],
-      [
-        "s",
-        "v4",
-        1
-      ],
-      [
-        "s",
-        "v5",
-        0
-      ],
-      [
-        "v1",
-        "v2",
-        0
-      ],
-      [
-        "v1",
-        "v3",
-        0
-      ],
-      [
-        "v1",
-        "v4",
-        1
-      ],
-      [
-        "v1",
-        "v5",
-        0
-      ],
-      [
-        "v2",
-        "v3",
-        1
-      ],
-      [
-        "v2",
-        "v4",
-        1
-      ],
-      [
-        "v2",
-        "v5",
-        0
-      ],
-      [
-        "v3",
-        "v4",
-        0
-      ],
-      [
-        "v3",
-        "v5",
-        1
-      ],
-      [
-        "v4",
-        "v5",
-        1
-      ]
-    ],
-    "start": "s",
-    "goal": null,
-    "_optimal": 5
-  },
-  {
-    "name": "Small Hard 2",
-    "vertices": {
-      "s": {
-        "x": 500,
-        "y": 150,
-        "label": "s",
-        "role": "start"
-      },
-      "v1": {
-        "x": 760,
-        "y": 300,
-        "label": "1",
-        "role": null
-      },
-      "v2": {
-        "x": 760,
-        "y": 600,
-        "label": "2",
-        "role": null
-      },
-      "v3": {
-        "x": 500,
-        "y": 750,
-        "label": "3",
-        "role": null
-      },
-      "v4": {
-        "x": 240,
-        "y": 600,
-        "label": "4",
-        "role": null
-      },
-      "v5": {
-        "x": 240,
-        "y": 300,
-        "label": "5",
-        "role": null
-      }
-    },
-    "edges": [
-      [
-        "s",
-        "v2",
-        1
-      ],
-      [
-        "s",
-        "v4",
-        1
-      ],
-      [
-        "s",
-        "v5",
-        0
-      ],
-      [
-        "v1",
-        "v3",
-        0
-      ],
-      [
-        "v1",
-        "v5",
-        1
-      ],
-      [
-        "v2",
-        "v3",
-        1
-      ],
-      [
-        "v2",
-        "v4",
-        0
-      ],
-      [
-        "v3",
-        "v5",
-        0
-      ],
-      [
-        "v4",
-        "v5",
-        0
-      ]
-    ],
-    "start": "s",
-    "goal": null,
-    "_optimal": 5
-  },
-  {
-    "name": "Small Hard 3",
-    "vertices": {
-      "s": {
-        "x": 500,
-        "y": 150,
-        "label": "s",
-        "role": "start"
-      },
-      "v1": {
-        "x": 760,
-        "y": 300,
-        "label": "1",
-        "role": null
-      },
-      "v2": {
-        "x": 760,
-        "y": 600,
-        "label": "2",
-        "role": null
-      },
-      "v3": {
-        "x": 500,
-        "y": 750,
-        "label": "3",
-        "role": null
-      },
-      "v4": {
-        "x": 240,
-        "y": 600,
-        "label": "4",
-        "role": null
-      },
-      "v5": {
-        "x": 240,
-        "y": 300,
-        "label": "5",
-        "role": null
-      }
-    },
-    "edges": [
-      [
-        "s",
-        "v2",
-        1
-      ],
-      [
-        "s",
-        "v3",
-        0
-      ],
-      [
-        "s",
-        "v4",
-        0
-      ],
-      [
-        "s",
-        "v5",
-        1
-      ],
-      [
-        "v1",
-        "v3",
-        1
-      ],
-      [
-        "v1",
-        "v4",
-        0
-      ],
-      [
-        "v2",
-        "v4",
-        1
-      ],
-      [
-        "v2",
-        "v5",
-        0
-      ],
-      [
-        "v3",
-        "v4",
-        0
-      ],
-      [
-        "v3",
-        "v5",
-        0
-      ],
-      [
-        "v4",
-        "v5",
-        1
-      ]
-    ],
-    "start": "s",
-    "goal": null,
-    "_optimal": 5
-  },
-  {
-    "name": "Small Hard 4",
-    "vertices": {
-      "s": {
-        "x": 500,
-        "y": 150,
-        "label": "s",
-        "role": "start"
-      },
-      "v1": {
-        "x": 760,
-        "y": 300,
-        "label": "1",
-        "role": null
-      },
-      "v2": {
-        "x": 760,
-        "y": 600,
-        "label": "2",
-        "role": null
-      },
-      "v3": {
-        "x": 500,
-        "y": 750,
-        "label": "3",
-        "role": null
-      },
-      "v4": {
-        "x": 240,
-        "y": 600,
-        "label": "4",
-        "role": null
-      },
-      "v5": {
-        "x": 240,
-        "y": 300,
-        "label": "5",
-        "role": null
-      }
-    },
-    "edges": [
-      [
-        "s",
-        "v2",
-        1
-      ],
-      [
-        "s",
-        "v3",
-        0
-      ],
-      [
-        "s",
-        "v4",
-        0
-      ],
-      [
-        "s",
-        "v5",
-        1
-      ],
-      [
-        "v1",
-        "v2",
-        1
-      ],
-      [
-        "v1",
-        "v4",
-        0
-      ],
-      [
-        "v1",
-        "v5",
-        1
-      ],
-      [
-        "v2",
-        "v5",
-        0
-      ],
-      [
-        "v3",
-        "v4",
-        0
-      ],
-      [
-        "v3",
-        "v5",
-        0
-      ]
-    ],
-    "start": "s",
-    "goal": null,
-    "_optimal": 5
-  }
-]);
+// Generated by tools/gen-bonus.js: bonus puzzle per stage index (same drawing, harder puzzle).
+window.BONUS_ALL = {"5":{"name":"Level 6 [HARD REMIX]","vertices":{"v1":{"x":400,"y":280,"label":"1","role":null},"v2":{"x":504,"y":340,"label":"2","role":null},"v3":{"x":504,"y":460,"label":"3","role":null},"v4":{"x":400,"y":520,"label":"4","role":"start"},"s":{"x":296,"y":460,"label":"s","role":null},"v5":{"x":296,"y":340,"label":"5","role":null},"v6":{"x":530,"y":175,"label":"6","role":null},"v7":{"x":660,"y":400,"label":"7","role":null},"v8":{"x":530,"y":625,"label":"8","role":null},"v9":{"x":270,"y":625,"label":"9","role":null},"v10":{"x":140,"y":400,"label":"10","role":null},"v11":{"x":270,"y":175,"label":"11","role":null}},"edges":[["s","v10",1],["v5","v10",0],["v5","v11",0],["v1","v11",1],["v1","v3",1],["v2","v3",0],["v2","v6",0],["v6","v7",0],["v7","v8",0],["v8","v9",0],["v4","v9",1],["v1","v5",0],["v3","v5",0],["v9","v10",0],["s","v5",0],["v3","v8",0],["v6","v11",1],["v1","v6",0],["s","v9",0],["v3","s",0],["v3","v4",1],["v4","v8",1],["v1","v2",0],["v2","v7",0],["v10","v11",1],["v3","v7",0]],"start":"v4","goal":null,"sourceName":"Level 6"},"17":{"name":"Level 18 [HARD REMIX]","vertices":{"v1":{"x":677,"y":598,"label":"1","role":null},"v2":{"x":737,"y":249,"label":"2","role":null},"v3":{"x":873,"y":607,"label":"3","role":null},"v4":{"x":275,"y":716,"label":"4","role":null},"v5":{"x":184,"y":392,"label":"5","role":null},"v6":{"x":279,"y":240,"label":"6","role":null},"v7":{"x":598,"y":755,"label":"7","role":null},"v8":{"x":405,"y":807,"label":"8","role":null},"v9":{"x":135,"y":566,"label":"9","role":null},"s":{"x":451,"y":635,"label":"s","role":null},"v10":{"x":581,"y":180,"label":"10","role":null},"v11":{"x":510,"y":405,"label":"11","role":null},"v12":{"x":334,"y":456,"label":"12","role":null},"v13":{"x":884,"y":450,"label":"13","role":null},"v14":{"x":903,"y":762,"label":"14","role":null},"v15":{"x":403,"y":138,"label":"15","role":"start"},"v16":{"x":819,"y":105,"label":"16","role":null}},"edges":[["v4","s",0],["v4","v8",0],["v7","v8",0],["v1","v7",0],["v1","v11",0],["v11","v12",0],["v9","v12",0],["v5","v9",0],["v5","v6",0],["v6","v15",1],["v10","v15",1],["v10","v16",0],["v2","v16",0],["v2","v13",0],["v3","v13",0],["v3","v14",0],["v6","v11",0],["v11","v15",1],["v5","v12",0],["v6","v10",0],["v2","v10",0],["v3","v7",1],["v4","v9",0],["v2","v11",0],["v1","v3",1],["v10","v11",1],["v7","s",1],["v6","v12",0],["v8","s",1],["v7","v14",0],["v1","v14",0],["v1","v13",0]],"start":"v15","goal":null,"sourceName":"Level 18"},"25":{"name":"Level 26 [HARD REMIX]","vertices":{"v1":{"x":357,"y":279,"label":"1","role":null},"v2":{"x":774,"y":356,"label":"2","role":null},"v3":{"x":948,"y":531,"label":"3","role":null},"v4":{"x":585,"y":141,"label":"4","role":null},"v5":{"x":415,"y":103,"label":"5","role":null},"v6":{"x":808,"y":145,"label":"6","role":null},"s":{"x":638,"y":631,"label":"s","role":null},"v7":{"x":1037,"y":216,"label":"7","role":null},"v8":{"x":106,"y":348,"label":"8","role":null},"v9":{"x":461,"y":503,"label":"9","role":null},"v10":{"x":174,"y":547,"label":"10","role":"start"},"v11":{"x":1092,"y":607,"label":"11","role":null},"v12":{"x":988,"y":366,"label":"12","role":null},"v13":{"x":597,"y":404,"label":"13","role":null},"v14":{"x":344,"y":620,"label":"14","role":null},"v15":{"x":177,"y":146,"label":"15","role":null},"v16":{"x":309,"y":465,"label":"16","role":null},"v17":{"x":793,"y":599,"label":"17","role":null}},"edges":[["s","v17",0],["v13","v17",0],["v2","v13",0],["v2","v3",0],["v3","v11",0],["v11","v12",0],["v7","v12",1],["v6","v7",0],["v4","v6",0],["v4","v5",0],["v1","v5",0],["v1","v9",0],["v9","v14",0],["v10","v14",1],["v10","v16",1],["v8","v16",0],["v8","v15",0],["v3","v12",1],["v2","v6",0],["v9","v16",0],["v2","v7",0],["v2","v12",0],["s","v14",1],["v3","v17",0],["v6","v12",0],["v1","v13",0],["v2","v4",0],["v11","v17",0],["v1","v4",0],["v1","v8",0],["v1","v16",0],["v12","v17",0],["v13","v16",1],["v2","v17",0],["v14","v16",0],["v5","v15",0],["v1","v15",0],["v8","v10",1]],"start":"v10","goal":null,"sourceName":"Level 26"},"27":{"name":"Level 28 [HARD REMIX]","vertices":{"v1":{"x":513,"y":164,"label":"1","role":null},"v2":{"x":785,"y":748,"label":"2","role":null},"s":{"x":547,"y":338,"label":"s","role":null},"v3":{"x":899,"y":102,"label":"3","role":null},"v4":{"x":328,"y":616,"label":"4","role":null},"v5":{"x":981,"y":604,"label":"5","role":null},"v6":{"x":985,"y":324,"label":"6","role":null},"v7":{"x":606,"y":750,"label":"7","role":null},"v8":{"x":303,"y":824,"label":"8","role":null},"v9":{"x":101,"y":402,"label":"9","role":null},"v10":{"x":325,"y":359,"label":"10","role":"start"},"v11":{"x":807,"y":406,"label":"11","role":null},"v12":{"x":618,"y":541,"label":"12","role":null},"v13":{"x":173,"y":642,"label":"13","role":null},"v14":{"x":1017,"y":823,"label":"14","role":null},"v15":{"x":702,"y":155,"label":"15","role":null},"v16":{"x":137,"y":809,"label":"16","role":null},"v17":{"x":1083,"y":167,"label":"17","role":null},"v18":{"x":227,"y":233,"label":"18","role":null},"v19":{"x":362,"y":122,"label":"19","role":null}},"edges":[["s","v15",0],["v1","v15",0],["v1","v19",0],["v10","v19",1],["v10","v18",1],["v9","v18",0],["v9","v13",0],["v4","v13",0],["v4","v12",0],["v11","v12",0],["v3","v11",0],["v3","v17",1],["v6","v17",0],["v5","v6",0],["v5","v14",0],["v2","v14",0],["v2","v7",1],["v7","v8",0],["v8","v16",0],["v8","v13",0],["v3","v15",0],["v1","s",0],["v6","v11",0],["v1","v18",0],["s","v12",0],["v2","v5",0],["v1","v10",1],["v4","v9",0],["v7","v12",0],["s","v19",1],["v4","v10",1],["v4","v8",0],["v4","v7",0],["v2","v12",0],["s","v10",1],["v3","v6",0],["v9","v10",1],["v13","v16",0],["v4","v16",0],["v18","v19",0]],"start":"v10","goal":null,"sourceName":"Level 28"}};
 
 </script>
 <script>
@@ -2306,6 +1367,8 @@ function unlockAll(p, indices) {
 function markCleared(progress, mode, index, children) {
   const p = progress[mode];
   p.cleared[index] = true;
+  // Clearing a previously skipped stage turns it into a normal clear.
+  p.skipped[index] = false;
   unlockAll(p, children);
   saveProgress(progress);
 }
@@ -2446,7 +1509,16 @@ function getChildren(i, total) {
   return scheduleFor(total).children[i] || [];
 }
 
-return { forkRole, getChildren };
+// Optional bonus side branches: on normal (non-fork) stages from stage 5 on
+// (the earliest stages are too small to make a harder puzzle from the same
+// drawing), never on two stages in a row, and not on the last stage.
+const BONUS_FROM = 4;
+function hasBonus(i, total) {
+  if (i < BONUS_FROM || i >= total - 1 || forkRole(i, total) !== "normal") return false;
+  return !hasBonus(i - 1, total);
+}
+
+return { forkRole, getChildren, hasBonus };
 })();
 
 modules["stagemap.js"] = (function () {
@@ -2466,7 +1538,7 @@ modules["stagemap.js"] = (function () {
 // middle lane. Connectors are drawn as soft S-curves rather than straight
 // segments so the map reads as a hand-laid trail, not a wiring diagram.
 
-const { getChildren, forkRole } = modules["level-graph.js"];
+const { getChildren, forkRole, hasBonus } = modules["level-graph.js"];
 
 const NS = "http://www.w3.org/2000/svg";
 const el = (tag, attrs) => {
@@ -2480,14 +1552,12 @@ const MARGIN_X = 40;
 const LANE_SPACING = 66;
 const ROW_SPACING = 50;
 const TOP_MARGIN = 34;
-const BONUS_EVERY = 4;
 const BONUS_REACH = 62; // how far the bonus branch sticks out (longer = clearer detour)
 const NODE_R = 12;
 const HIT_R = 21;
 
 const BRANCH_COLS = { 1: [1], 2: [0, 2], 3: [0, 1, 2] };
 const JITTER_X = 9;
-const BOW_MAX = 16;
 
 // Deterministic 0..1 pseudo-random from an integer -- stable across
 // re-renders (the map shouldn't reshuffle under the player mid-session) but
@@ -2554,13 +1624,9 @@ function computeLayout(count) {
   return { pos, rows: row + 1 };
 }
 
-// A soft S-curve instead of a straight line, with a small random sideways
-// bow so curves don't all mirror each other -- reads as a laid-out trail
-// rather than a schematic connector.
-function curvePath(x1, y1, x2, y2, seed) {
-  const midY = (y1 + y2) / 2;
-  const bow = (hash01(seed) - 0.5) * 2 * BOW_MAX;
-  return `M ${x1} ${y1} C ${x1 + bow} ${midY}, ${x2 + bow} ${midY}, ${x2} ${y2}`;
+// Straight connector between two stages.
+function linePath(x1, y1, x2, y2) {
+  return `M ${x1} ${y1} L ${x2} ${y2}`;
 }
 
 function nodeGroup({ x, y, r, state, label, onTap }) {
@@ -2599,8 +1665,8 @@ function renderStageMap(svg, { presets, progress, currentIndex, onSelect, onBonu
     const skipped = !!progress.skipped[i];
     if (i === currentIndex) return "current";
     if (locked) return "locked";
-    if (skipped) return "skipped";
     if (cleared) return "cleared";
+    if (skipped) return "skipped";
     return "open";
   };
 
@@ -2611,7 +1677,7 @@ function renderStageMap(svg, { presets, progress, currentIndex, onSelect, onBonu
       // leading into a still-locked stage must not look "live".
       const childLocked = !progress.unlocked[child];
       gEdges.appendChild(el("path", {
-        d: curvePath(xFor(i), yFor(i), xFor(child), yFor(child), i * 97 + child),
+        d: linePath(xFor(i), yFor(i), xFor(child), yFor(child)),
         fill: "none",
         class: "stage-edge" + (childLocked ? " locked" : " live"),
       }));
@@ -2634,7 +1700,7 @@ function renderStageMap(svg, { presets, progress, currentIndex, onSelect, onBonu
     // Occasional "hard remix" side branch off a normal (non-fork) stage —
     // pushed out beyond whichever edge lane it's closest to, so it reads as
     // a clearly-detached side pocket rather than part of the main path.
-    if (forkRole(i, count) === "normal" && i % BONUS_EVERY === BONUS_EVERY - 1 && i < count - 1) {
+    if (hasBonus(i, count)) {
       const col = pos[i].col;
       const dir = col <= (COLS - 1) / 2 ? -1 : 1;
       // A middle-lane source needs a longer reach -- one lane-width of push
@@ -2644,7 +1710,7 @@ function renderStageMap(svg, { presets, progress, currentIndex, onSelect, onBonu
       const by = yFor(i) - ROW_SPACING * 0.35;
       gEdges.insertBefore(
         el("path", {
-          d: curvePath(xFor(i), yFor(i), bx, by, i * 53 + 7),
+          d: linePath(xFor(i), yFor(i), bx, by),
           fill: "none",
           class: "stage-edge bonus" + (locked ? " locked" : ""),
         }),
@@ -2671,6 +1737,54 @@ function renderStageMap(svg, { presets, progress, currentIndex, onSelect, onBonu
 return { renderStageMap };
 })();
 
+modules["lang.js"] = (function () {
+"use strict";
+// English / Japanese switch. English is the default; the choice is remembered.
+// - Static text in index.html: an element with data-ja="..." shows that HTML
+//   in Japanese mode and its original HTML in English mode.
+// - Dynamic text: t("English", "日本語").
+
+const KEY = "ifwLang";
+let lang = "en";
+try { if (localStorage.getItem(KEY) === "ja") lang = "ja"; } catch (e) { /* storage unavailable */ }
+
+const listeners = [];
+
+function getLang() {
+  return lang;
+}
+
+function t(en, ja) {
+  return lang === "ja" ? ja : en;
+}
+
+// "Level 3" -> "ステージ 3", "Level 3 [HARD REMIX]" -> "ステージ 3(ボーナス)" in Japanese mode.
+function stageName(name) {
+  return lang === "ja" ? name.replace(/^Level\b/, "ステージ").replace(/\s*\[HARD REMIX\]$/, "(ボーナス)") : name;
+}
+
+function onLangChange(fn) {
+  listeners.push(fn);
+}
+
+function applyStaticText() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-ja]").forEach((el) => {
+    if (el.dataset.en == null) el.dataset.en = el.innerHTML;
+    el.innerHTML = lang === "ja" ? el.dataset.ja : el.dataset.en;
+  });
+}
+
+function setLang(next) {
+  lang = next;
+  try { localStorage.setItem(KEY, next); } catch (e) { /* storage unavailable */ }
+  applyStaticText();
+  listeners.forEach((fn) => fn());
+}
+
+return { getLang, t, stageName, onLangChange, applyStaticText, setLang };
+})();
+
 modules["game.js"] = (function () {
 "use strict";
 // Orchestrates the real Incident Flip Walk game inside the terminal chassis:
@@ -2680,8 +1794,9 @@ modules["game.js"] = (function () {
 const { cloneEdges, isWalkable, flipIncident, legalMoves } = modules["puzzle-model.js"];
 const { generatePuzzle, remixLevel } = modules["puzzle-generator.js"];
 const { loadProgress, markCleared, markSkipped } = modules["progress.js"];
-const { getChildren } = modules["level-graph.js"];
+const { getChildren, hasBonus } = modules["level-graph.js"];
 const { renderStageMap } = modules["stagemap.js"];
+const { t: L, stageName, onLangChange } = modules["lang.js"];
 
 const NS = "http://www.w3.org/2000/svg";
 const el = (tag, attrs) => {
@@ -2703,6 +1818,7 @@ function initGame(dom) {
   let gameDifficulty = "medium";
   let canRevisit = false;
   let isRandom = false;
+  let bonusFrom = null; // stage index a bonus (remix) puzzle branches off, else null
   let presetIndex = 0;
   let level = null;
   let state = null;
@@ -2830,42 +1946,48 @@ function initGame(dom) {
   }
 
   function showClearOverlay() {
-    dom.overlayTitle.textContent = isRandom ? "PUZZLE CLEARED" : "STAGE CLEAR";
+    dom.overlayTitle.textContent = bonusFrom != null ? L("BONUS CLEAR", "ボーナスクリア") : isRandom ? L("PUZZLE CLEARED", "クリア") : L("STAGE CLEAR", "ステージクリア");
     dom.overlayTitle.classList.remove("warn");
-    dom.overlaySubtitle.textContent = `${level.name} -- ${state.moves} move${state.moves === 1 ? "" : "s"}`;
+    dom.overlaySubtitle.textContent = `${stageName(level.name)} -- ${L(`${state.moves} move${state.moves === 1 ? "" : "s"}`, `${state.moves}手`)}`;
     dom.overlayActions.innerHTML = "";
 
-    if (!isRandom) {
-      const kids = childrenOf(presetIndex).filter((c) => progress[gameMode].unlocked[c]);
+    if (!isRandom || bonusFrom != null) {
+      // A bonus continues from the stage it branches off.
+      const from = bonusFrom != null ? bonusFrom : presetIndex;
+      const kids = childrenOf(from).filter((c) => progressView().unlocked[c]);
       if (kids.length === 1) {
-        dom.overlayActions.appendChild(overlayButton("NEXT STAGE →", "primary", () => { hideOverlay(); loadPreset(kids[0]); }));
+        dom.overlayActions.appendChild(overlayButton(L("NEXT STAGE →", "次のステージ →"), "primary", () => { hideOverlay(); loadPreset(kids[0]); }));
       } else if (kids.length > 1) {
         kids.forEach((c) => {
-          dom.overlayActions.appendChild(overlayButton(`STAGE ${c + 1} →`, "primary", () => { hideOverlay(); loadPreset(c); }));
+          dom.overlayActions.appendChild(overlayButton(L(`STAGE ${c + 1} →`, `ステージ ${c + 1} →`), "primary", () => { hideOverlay(); loadPreset(c); }));
         });
       }
+      if (bonusFrom == null && hasBonus(presetIndex, currentPresets().length)) {
+        dom.overlayActions.appendChild(overlayButton(L("BONUS →", "ボーナスへ →"), "bonus", () => { hideOverlay(); startBonus(presetIndex); }));
+      }
     } else {
-      dom.overlayActions.appendChild(overlayButton("NEW RANDOM", "primary", () => { hideOverlay(); loadNewPuzzle(); }));
+      dom.overlayActions.appendChild(overlayButton(L("NEW RANDOM", "新しいランダム問題"), "primary", () => { hideOverlay(); loadNewPuzzle(); }));
     }
-    dom.overlayActions.appendChild(overlayButton("← MAP", "", () => { hideOverlay(); if (dom.showMap) dom.showMap(); }));
+    dom.overlayActions.appendChild(overlayButton(L("← MAP", "← マップ"), "", () => { hideOverlay(); if (dom.showMap) dom.showMap(); }));
     dom.boardOverlay.hidden = false;
   }
 
   function showStuckOverlay() {
-    dom.overlayTitle.textContent = "STUCK";
+    dom.overlayTitle.textContent = L("STUCK", "詰み");
     dom.overlayTitle.classList.add("warn");
-    dom.overlaySubtitle.textContent = "no legal moves remain from here.";
+    dom.overlaySubtitle.textContent = L("no legal moves remain from here.", "ここからはもう進めない。");
     dom.overlayActions.innerHTML = "";
-    dom.overlayActions.appendChild(overlayButton("UNDO", "primary", () => { hideOverlay(); undo(); }));
-    dom.overlayActions.appendChild(overlayButton("RESET STAGE", "", () => { hideOverlay(); resetCurrent(); }));
+    dom.overlayActions.appendChild(overlayButton(L("UNDO", "1手戻す"), "primary", () => { hideOverlay(); undo(); }));
+    dom.overlayActions.appendChild(overlayButton(L("RESET STAGE", "最初から"), "", () => { hideOverlay(); resetCurrent(); }));
     if (!isRandom) {
-      dom.overlayActions.appendChild(overlayButton("SKIP STAGE", "ghost", () => { hideOverlay(); skipCurrentLevel(); }));
+      dom.overlayActions.appendChild(overlayButton(L("SKIP STAGE", "スキップ"), "ghost", () => { hideOverlay(); skipCurrentLevel(); }));
     }
     dom.boardOverlay.hidden = false;
   }
 
   function loadPreset(idx, { enterBoard = true } = {}) {
     isRandom = false;
+    bonusFrom = null;
     presetIndex = idx;
     startLevel(currentPresets()[idx]);
     refreshLevelSelect();
@@ -2875,14 +1997,15 @@ function initGame(dom) {
 
   function loadNewPuzzle({ enterBoard = true } = {}) {
     dom.btnRandom.disabled = true;
-    dom.btnRandom.textContent = "GENERATING...";
+    dom.btnRandom.textContent = L("GENERATING...", "生成中...");
     setTimeout(() => {
       isRandom = true;
+      bonusFrom = null;
       const puzzle = generatePuzzle({ gameMode, gameDifficulty, recentPuzzles, fallbackPresets: currentPresets() });
       startLevel(puzzle);
       dom.levelSelect.value = "random";
       dom.btnRandom.disabled = false;
-      dom.btnRandom.textContent = "RANDOM";
+      dom.btnRandom.textContent = L("RANDOM PUZZLE", "ランダム問題");
       refreshStageMap();
       if (enterBoard && dom.onEnterBoard) dom.onEnterBoard();
     }, 20);
@@ -2919,14 +2042,16 @@ function initGame(dom) {
     else if (totalV > 40) { nodeRadius = 13; activeR = 16; wWidth = 2.6; bWidth = 1.6; curStroke = 2.4; legalStroke = 1.8; normalStroke = 1.1; fontSize = "10"; }
     else if (totalV > 15) { nodeRadius = 17; activeR = 21; wWidth = 3.6; bWidth = 2; curStroke = 3; legalStroke = 2.2; normalStroke = 1.4; fontSize = "11"; }
 
-    let maxX = 900, maxY = 700;
-    for (const v of Object.values(level.vertices)) {
-      if (v.x > maxX) maxX = v.x;
-      if (v.y > maxY) maxY = v.y;
-    }
-    const svgW = maxX + 80;
-    const svgH = maxY + 80;
-    svg.setAttribute("viewBox", `0 0 ${svgW} ${svgH}`);
+    // Frame the graph's bounding box (centered, with a minimum size so tiny
+    // graphs don't get blown up), instead of a fixed canvas from the origin.
+    const xs = Object.values(level.vertices).map((v) => v.x);
+    const ys = Object.values(level.vertices).map((v) => v.y);
+    const pad = 70;
+    const svgW = Math.max(Math.max(...xs) - Math.min(...xs) + 2 * pad, 560);
+    const svgH = Math.max(Math.max(...ys) - Math.min(...ys) + 2 * pad, 360);
+    const cx = (Math.max(...xs) + Math.min(...xs)) / 2;
+    const cy = (Math.max(...ys) + Math.min(...ys)) / 2;
+    svg.setAttribute("viewBox", `${cx - svgW / 2} ${cy - svgH / 2} ${svgW} ${svgH}`);
 
     const container = svg.parentElement;
     const availW = (container && container.clientWidth) || svgW;
@@ -3030,15 +2155,15 @@ function initGame(dom) {
     dom.tagRevisit.textContent = `[REVISIT:${canRevisit ? "ON" : "OFF"}]`;
     dom.tagRevisit.classList.toggle("tag-warn", canRevisit);
 
-    dom.infoStageName.textContent = level.name;
-    dom.infoCond.textContent = gameMode === "goal" ? "REACH s->t" : "VISIT ALL";
-    dom.infoOptimal.textContent = level._optimal ? `${level._optimal} moves` : "n/a";
+    dom.infoStageName.textContent = stageName(level.name);
+    dom.infoCond.textContent = gameMode === "goal" ? L("REACH s->t", "s から t へ") : L("VISIT ALL", "すべての点を通る");
+    dom.infoOptimal.textContent = level._optimal ? L(`${level._optimal} moves`, `${level._optimal}手`) : "-";
 
     dom.boardStatus.textContent = state.won
-      ? "CLEARED"
+      ? L("CLEARED", "クリア")
       : computeLegal().length
-      ? "IN PROGRESS"
-      : "STUCK - no legal moves";
+      ? L("IN PROGRESS", "プレイ中")
+      : L("STUCK - no legal moves", "詰み - 進める点がない");
     dom.boardStatus.classList.toggle("tag-warn", !state.won && !computeLegal().length);
   }
 
@@ -3058,15 +2183,30 @@ function initGame(dom) {
       const cleared = !!p.cleared[i];
       const skipped = !!p.skipped[i];
       const mark = cleared ? "* " : skipped ? "» " : "";
-      opt.textContent = `${mark}${lv.name}${locked ? " (LOCKED)" : ""}`;
+      opt.textContent = `${mark}${stageName(lv.name)}${locked ? L(" (LOCKED)", "(未解放)") : ""}`;
       opt.disabled = locked;
       dom.levelSelect.appendChild(opt);
     });
     const randomOpt = document.createElement("option");
     randomOpt.value = "random";
-    randomOpt.textContent = "RANDOM";
+    randomOpt.textContent = L("RANDOM", "ランダム");
     dom.levelSelect.appendChild(randomOpt);
     dom.levelSelect.value = isRandom ? "random" : String(presetIndex);
+  }
+
+  // Bonus puzzle for a stage: the pre-generated one from bonus.js (same
+  // drawing, harder puzzle) when it still matches the stage, else a remix.
+  function startBonus(sourceIndex) {
+    const base = currentPresets()[sourceIndex];
+    const pre = gameMode === "all" && window.BONUS_ALL && window.BONUS_ALL[sourceIndex];
+    setTimeout(() => {
+      isRandom = true;
+      bonusFrom = sourceIndex;
+      startLevel(pre && pre.sourceName === base.name ? pre : remixLevel(base, gameMode, canRevisit));
+      dom.levelSelect.value = "random";
+      refreshStageMap();
+      if (dom.onEnterBoard) dom.onEnterBoard();
+    }, 20);
   }
 
   function refreshStageMap() {
@@ -3077,23 +2217,21 @@ function initGame(dom) {
       onSelect(idx) {
         loadPreset(idx);
       },
-      onBonus(sourceIndex) {
-        const base = currentPresets()[sourceIndex];
-        setTimeout(() => {
-          isRandom = true;
-          const remix = remixLevel(base, gameMode, canRevisit);
-          startLevel(remix);
-          dom.levelSelect.value = "random";
-          refreshStageMap();
-          if (dom.onEnterBoard) dom.onEnterBoard();
-        }, 20);
-      },
+      onBonus: startBonus,
     });
   }
 
   // ---------------- GUI wiring ----------------
 
   dom.btnRandom.addEventListener("click", () => loadNewPuzzle());
+  const labelRandomButton = () => { if (!dom.btnRandom.disabled) dom.btnRandom.textContent = L("RANDOM PUZZLE", "ランダム問題"); };
+  labelRandomButton();
+  onLangChange(() => {
+    labelRandomButton();
+    refreshLevelSelect();
+    updateStats();
+    if (!dom.boardOverlay.hidden) (state.won ? showClearOverlay : showStuckOverlay)();
+  });
   dom.btnUndo.addEventListener("click", undo);
   dom.btnReset.addEventListener("click", resetCurrent);
   if (dom.btnSkip) dom.btnSkip.addEventListener("click", skipCurrentLevel);
@@ -3131,6 +2269,7 @@ modules["title.js"] = (function () {
 // not here.
 
 const { loadProgress } = modules["progress.js"];
+const { t: L } = modules["lang.js"];
 
 const BOOT_LINES = [
   "> BOOTING IFW-OS v1.0 ...",
@@ -3151,7 +2290,7 @@ function initTitle({ onStart }) {
   const prompt = document.getElementById("titlePrompt");
 
   const progress = loadProgress();
-  prompt.textContent = hasSave(progress) ? "TAP TO CONTINUE" : "TAP TO START";
+  prompt.textContent = hasSave(progress) ? L("TAP TO CONTINUE", "タップしてつづける") : L("TAP TO START", "タップしてスタート");
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let revealed = false;
@@ -3222,6 +2361,8 @@ modules["rules.js"] = (function () {
 // "How to play" dialog: static rule text plus a tiny interactive demo of the
 // one core mechanic (arriving at a node flips every edge touching it).
 
+const { t: L, onLangChange } = modules["lang.js"];
+
 const NS = "http://www.w3.org/2000/svg";
 const el = (tag, attrs) => {
   const node = document.createElementNS(NS, tag);
@@ -3260,7 +2401,7 @@ function initFlipDemo(svg, caption) {
   svg.addEventListener("click", () => {
     walkable = walkable.map((w) => !w);
     render(true);
-    if (caption) caption.textContent = "flipped! tap again to flip back";
+    if (caption) caption.textContent = L("flipped! tap again to flip back", "反転した! もう一度タップで元に戻る");
   });
 }
 
@@ -3271,6 +2412,9 @@ function initRules({ helpBtn }) {
   const caption = document.querySelector(".rules-demo-caption");
 
   initFlipDemo(demoSvg, caption);
+  const idleCaption = () => { caption.textContent = L("tap the lit node to see it flip", "光っている点をタップすると反転する"); };
+  idleCaption();
+  onLangChange(idleCaption);
 
   function open() {
     if (typeof dialog.showModal === "function") dialog.showModal();
@@ -3297,6 +2441,7 @@ const { startBackground } = modules["background.js"];
 const { initGame } = modules["game.js"];
 const { initTitle } = modules["title.js"];
 const { initRules } = modules["rules.js"];
+const { getLang, setLang, applyStaticText } = modules["lang.js"];
 
 function startClock(el) {
   function tick() {
@@ -3345,6 +2490,9 @@ function initBackButton(views) {
 }
 
 function boot() {
+  applyStaticText();
+  document.getElementById("btnLang").addEventListener("click", () => setLang(getLang() === "ja" ? "en" : "ja"));
+
   startBackground(document.getElementById("bgCanvas"));
   startClock(document.getElementById("clock"));
 

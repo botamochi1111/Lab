@@ -6,6 +6,7 @@
 // not here.
 
 import { loadProgress } from "./progress.js";
+import { t as L } from "./lang.js";
 
 const BOOT_LINES = [
   "> BOOTING IFW-OS v1.0 ...",
@@ -26,7 +27,7 @@ export function initTitle({ onStart }) {
   const prompt = document.getElementById("titlePrompt");
 
   const progress = loadProgress();
-  prompt.textContent = hasSave(progress) ? "TAP TO CONTINUE" : "TAP TO START";
+  prompt.textContent = hasSave(progress) ? L("TAP TO CONTINUE", "タップしてつづける") : L("TAP TO START", "タップしてスタート");
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let revealed = false;

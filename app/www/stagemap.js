@@ -13,7 +13,7 @@
 // middle lane. Connectors are drawn as soft S-curves rather than straight
 // segments so the map reads as a hand-laid trail, not a wiring diagram.
 
-import { getChildren, forkRole } from "./level-graph.js";
+import { getChildren, forkRole, hasBonus } from "./level-graph.js";
 
 const NS = "http://www.w3.org/2000/svg";
 const el = (tag, attrs) => {
@@ -27,14 +27,12 @@ const MARGIN_X = 40;
 const LANE_SPACING = 66;
 const ROW_SPACING = 50;
 const TOP_MARGIN = 34;
-const BONUS_EVERY = 4;
 const BONUS_REACH = 62; // how far the bonus branch sticks out (longer = clearer detour)
 const NODE_R = 12;
 const HIT_R = 21;
 
 const BRANCH_COLS = { 1: [1], 2: [0, 2], 3: [0, 1, 2] };
 const JITTER_X = 9;
-const BOW_MAX = 16;
 
 // Deterministic 0..1 pseudo-random from an integer -- stable across
 // re-renders (the map shouldn't reshuffle under the player mid-session) but
@@ -101,13 +99,9 @@ function computeLayout(count) {
   return { pos, rows: row + 1 };
 }
 
-// A soft S-curve instead of a straight line, with a small random sideways
-// bow so curves don't all mirror each other -- reads as a laid-out trail
-// rather than a schematic connector.
-function curvePath(x1, y1, x2, y2, seed) {
-  const midY = (y1 + y2) / 2;
-  const bow = (hash01(seed) - 0.5) * 2 * BOW_MAX;
-  return `M ${x1} ${y1} C ${x1 + bow} ${midY}, ${x2 + bow} ${midY}, ${x2} ${y2}`;
+// Straight connector between two stages.
+function linePath(x1, y1, x2, y2) {
+  return `M ${x1} ${y1} L ${x2} ${y2}`;
 }
 
 function nodeGroup({ x, y, r, state, label, onTap }) {
@@ -146,8 +140,8 @@ export function renderStageMap(svg, { presets, progress, currentIndex, onSelect,
     const skipped = !!progress.skipped[i];
     if (i === currentIndex) return "current";
     if (locked) return "locked";
-    if (skipped) return "skipped";
     if (cleared) return "cleared";
+    if (skipped) return "skipped";
     return "open";
   };
 
@@ -158,7 +152,7 @@ export function renderStageMap(svg, { presets, progress, currentIndex, onSelect,
       // leading into a still-locked stage must not look "live".
       const childLocked = !progress.unlocked[child];
       gEdges.appendChild(el("path", {
-        d: curvePath(xFor(i), yFor(i), xFor(child), yFor(child), i * 97 + child),
+        d: linePath(xFor(i), yFor(i), xFor(child), yFor(child)),
         fill: "none",
         class: "stage-edge" + (childLocked ? " locked" : " live"),
       }));
@@ -181,7 +175,7 @@ export function renderStageMap(svg, { presets, progress, currentIndex, onSelect,
     // Occasional "hard remix" side branch off a normal (non-fork) stage —
     // pushed out beyond whichever edge lane it's closest to, so it reads as
     // a clearly-detached side pocket rather than part of the main path.
-    if (forkRole(i, count) === "normal" && i % BONUS_EVERY === BONUS_EVERY - 1 && i < count - 1) {
+    if (hasBonus(i, count)) {
       const col = pos[i].col;
       const dir = col <= (COLS - 1) / 2 ? -1 : 1;
       // A middle-lane source needs a longer reach -- one lane-width of push
@@ -191,7 +185,7 @@ export function renderStageMap(svg, { presets, progress, currentIndex, onSelect,
       const by = yFor(i) - ROW_SPACING * 0.35;
       gEdges.insertBefore(
         el("path", {
-          d: curvePath(xFor(i), yFor(i), bx, by, i * 53 + 7),
+          d: linePath(xFor(i), yFor(i), bx, by),
           fill: "none",
           class: "stage-edge bonus" + (locked ? " locked" : ""),
         }),

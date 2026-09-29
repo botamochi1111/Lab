@@ -1,0 +1,4 @@
+Level 24: {"n":20,"realEdges":38,"decoys":3,"crossings":2,"realAvgDeg":3.8,"endVisibleDeg":3,"minVisibleDegNonStart":2,"walks":32677,"plausibleTraps":13,"maxDepth":15,"ambiguous":5,"steps":19,"greedySolves":false,"difficulty":100}
+Level 25: {"n":20,"realEdges":40,"decoys":4,"crossings":4,"realAvgDeg":4,"endVisibleDeg":3,"minVisibleDegNonStart":2,"walks":56179,"plausibleTraps":14,"maxDepth":9,"ambiguous":6,"steps":19,"greedySolves":false,"difficulty":107.6}
+Level 26: {"n":20,"realEdges":37,"decoys":4,"crossings":4,"realAvgDeg":3.7,"endVisibleDeg":3,"minVisibleDegNonStart":2,"walks":36251,"plausibleTraps":12,"maxDepth":15,"ambiguous":7,"steps":19,"greedySolves":false,"difficulty":121.8}
+Level 27: {"n":20,"realEdges":33,"decoys":4,"crossings":1,"realAvgDeg":3.3,"endVisibleDeg":3,"minVisibleDegNonStart":3,"walks":7143,"plausibleTraps":10,"maxDepth":16,"ambiguous":6,"steps":19,"greedySolves":false,"difficulty":81.1}

@@ -2,6 +2,7 @@ import { startBackground } from "./background.js";
 import { initGame } from "./game.js";
 import { initTitle } from "./title.js";
 import { initRules } from "./rules.js";
+import { getLang, setLang, applyStaticText } from "./lang.js";
 
 function startClock(el) {
   function tick() {
@@ -50,6 +51,9 @@ function initBackButton(views) {
 }
 
 function boot() {
+  applyStaticText();
+  document.getElementById("btnLang").addEventListener("click", () => setLang(getLang() === "ja" ? "en" : "ja"));
+
   startBackground(document.getElementById("bgCanvas"));
   startClock(document.getElementById("clock"));
 

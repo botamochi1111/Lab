@@ -29,7 +29,7 @@ visit("main.js");
 function wrapModule(file) {
   let src = read(file);
   const exported = [];
-  src = src.replace(/^import\s*\{([^}]*)\}\s*from\s*"\.\/([^"]+)";/gm, (_, names, dep) => `const {${names}} = modules[${JSON.stringify(dep)}];`);
+  src = src.replace(/^import\s*\{([^}]*)\}\s*from\s*"\.\/([^"]+)";/gm, (_, names, dep) => `const {${names.replace(/([\w$]+)\s+as\s+([\w$]+)/g, "$1: $2")}} = modules[${JSON.stringify(dep)}];`);
   src = src.replace(/^export\s+(async\s+function|function|const|let|class)\s+([A-Za-z_$][\w$]*)/gm, (_, kind, name) => {
     exported.push(name);
     return `${kind} ${name}`;

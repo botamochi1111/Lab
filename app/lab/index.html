@@ -7,8 +7,17 @@
 <link rel="stylesheet" href="lab.css">
 </head>
 <body>
+<div id="errBanner" hidden style="background:#fdd;color:#900;padding:6px 10px;font-size:13px;white-space:pre-wrap"></div>
+<script>
+// Show script errors on the page itself (no developer tools needed).
+window.addEventListener("error", function (e) {
+  var b = document.getElementById("errBanner");
+  b.hidden = false;
+  b.textContent += "エラー / Error: " + e.message + (e.filename ? "  (" + e.filename.split("/").pop() + ":" + e.lineno + ")" : "") + "\n";
+});
+</script>
 <header class="bar">
-  <strong class="brand">IFW LAB</strong>
+  <strong class="brand">IFW LAB</strong> <span class="small" id="labVersion">v2026-09-29e</span>
   <button id="btnLang">English</button>
   <select id="sampleSelect" title="レベルを読み込む"></select>
   <button id="btnNew">新規</button>
@@ -62,6 +71,7 @@
       <div class="legend">
         <div><span class="sw off"></span>初期オフ</div>
         <div><span class="sw on"></span>初期オン</div>
+        <div><span class="sw fixed"></span>固定(常に通れる・反転しない)</div>
         <div><span class="sw derived"></span>本当に使える辺(VISIT_ALL・再訪なし)</div>
       </div>
     </div>
@@ -84,14 +94,22 @@
         <button id="btnSolNext">▶</button>
         <button id="btnSolExit">終了</button>
       </div>
+      <hr>
+      <button id="btnStageTable">ゲームの全ステージの難易度一覧</button>
+      <div id="stageTableOut" class="stats"></div>
     </div>
 
     <div class="tab" id="tab-proof" hidden>
-      <p class="small">再訪ありS→Tのハブ分解補題の前提チェックと、具体グラフの全状態探索 ⇔ 補題の抽象モデルの一致確認。</p>
-      <div id="proofChecks" class="stats"></div>
-      <button id="btnLemma" class="primary">補題を検証(到達集合の一致)</button>
+      <p class="small">どんなグラフでも使える全状態探索と、再訪ありS→Tのハブ分解補題の検証。</p>
+      <button id="btnSTSearch" class="primary">S→T 全状態探索(条件なし)</button>
+      <div id="stOut" class="stats"></div>
+      <hr>
+      <div class="small">補題の検証(証明用)</div>
+      <button id="btnLemma">補題を検証(そのままのグラフで)</button>
+      <button id="btnConform">補題の前提を満たす形に変換</button>
       <button id="btnPCheck">再訪なしS→T: P判定と全探索を比較</button>
       <div id="proofOut" class="stats"></div>
+      <div id="proofChecks" class="stats"></div>
     </div>
   </aside>
 </main>
@@ -106,10 +124,18 @@
 </dialog>
 
 <script src="../www/presets.js"></script>
-<script src="../www/handmade-extra.js"></script>
+<script src="../www/bonus.js"></script>
 <script src="lang.js"></script>
 <script src="engine.js"></script>
 <script src="samples.js"></script>
 <script src="lab.js"></script>
+<script>
+// lab.js sets this as its last statement; if it's missing, lab.js didn't load or stopped partway.
+if (!window.IFW_LAB_READY) {
+  var b = document.getElementById("errBanner");
+  b.hidden = false;
+  b.textContent += "lab.js が最後まで実行されていません(読み込み失敗か途中でエラー) / lab.js did not finish loading\n";
+}
+</script>
 </body>
 </html>

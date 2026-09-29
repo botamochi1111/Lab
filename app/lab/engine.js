@@ -353,6 +353,125 @@ function abstractReach(G, H, cap = 400000) {
   return { seen, ends, reachesGoal, truncated };
 }
 
+// Lemma check that works on ANY graph (S→T with revisits). Hallways that meet
+// the lemma's conditions are compressed to the lemma's door bits; everything
+// else (hub-hub edges, non-leaf start/goal, fixed edges, hallways with a
+// non-OFF interior or with s/t inside, degree-2 cycles) stays exact, as one
+// walkability bit per edge. The hybrid model's reachable set must equal the
+// full state search projected the same way (positions inside compressed
+// hallways are skipped). With no compressible hallway this is trivially equal.
+//
+// Hybrid moves from position p:
+//   - through a compressed hallway door y at p (lemma): bit y = 1 and the far
+//     door x = 0; y := 0; arrive at the far hub K: flip every other door at K
+//     and every exact edge at K.
+//   - along an exact edge e = pq with bit 1: arrive at q: flip every exact
+//     (non-fixed) edge at q and every door at q.
+// Hallway codes (why a hallway is left exact): "noInternal", "sameHub",
+// "fixed", "interiorNotOff", "startGoalInside".
+function verifyLemmaHybrid(G, cap = 400000) {
+  const H = hubStructure(G);
+  const compressed = [];
+  const exactHallways = [];
+  const inCompressed = new Uint8Array(G.edges.length);
+  const insideCompressed = new Uint8Array(G.n);
+  H.hallways.forEach((h, i) => {
+    let why = null;
+    if (!h.internal.length) why = "noInternal";
+    else if (h.a.node === h.b.node) why = "sameHub";
+    else if (h.edges.some((k) => G.edges[k].w === FIXED)) why = "fixed";
+    else if (h.edges.slice(1, -1).some((k) => G.edges[k].w !== OFF)) why = "interiorNotOff";
+    else if (h.internal.includes(G.s) || h.internal.includes(G.t)) why = "startGoalInside";
+    if (why) { exactHallways.push({ index: i, why, hallway: h }); return; }
+    compressed.push(h);
+    h.edges.forEach((k) => (inCompressed[k] = 1));
+    h.internal.forEach((v) => (insideCompressed[v] = 1));
+  });
+
+  const ends = [];
+  const doorsAt = Array.from({ length: G.n }, () => []);
+  compressed.forEach((h) => {
+    for (const side of ["a", "b"]) {
+      doorsAt[h[side].node].push(ends.length);
+      ends.push({ node: h[side].node, edge: h[side].edge });
+    }
+  });
+  const exactEdges = [];
+  G.edges.forEach((_, k) => { if (!inCompressed[k]) exactEdges.push(k); });
+  const exactAt = Array.from({ length: G.n }, () => []);   // flippable exact edges at a vertex
+  const exactAdj = Array.from({ length: G.n }, () => []);
+  exactEdges.forEach((k, j) => {
+    const e = G.edges[k];
+    exactAdj[e.u].push({ to: e.v, j });
+    exactAdj[e.v].push({ to: e.u, j });
+    if (e.w === FIXED) return;
+    exactAt[e.u].push(j);
+    exactAt[e.v].push(j);
+  });
+
+  const keyOfHybrid = (pos, d, c) => `${pos}|${d.join("")}|${c.join("")}`;
+  const project = (st) => keyOfHybrid(st.pos, ends.map((x) => (walkable(G, x.edge, st.f) ? 1 : 0)), exactEdges.map((k) => (walkable(G, k, st.f) ? 1 : 0)));
+
+  const d0 = ends.map((x) => (walkable(G, x.edge, 0) ? 1 : 0));
+  const c0 = exactEdges.map((k) => (walkable(G, k, 0) ? 1 : 0));
+  const seen = new Set([keyOfHybrid(G.s, d0, c0)]);
+  const queue = [{ pos: G.s, d: d0, c: c0 }];
+  let truncated = false;
+  let hybridGoal = false;
+  const push = (pos, d, c) => {
+    const k = keyOfHybrid(pos, d, c);
+    if (seen.has(k)) return;
+    if (seen.size >= cap) { truncated = true; return; }
+    seen.add(k);
+    queue.push({ pos, d, c });
+  };
+  for (let qi = 0; qi < queue.length && !truncated; qi++) {
+    const { pos, d, c } = queue[qi];
+    if (pos === G.t) { hybridGoal = true; continue; }
+    for (const y of doorsAt[pos]) {
+      const x = y ^ 1;
+      if (d[y] !== 1 || d[x] !== 0) continue;
+      const K = ends[x].node;
+      const nd = d.slice();
+      nd[y] = 0;
+      for (const z of doorsAt[K]) if (z !== x) nd[z] ^= 1;
+      const nc = c.slice();
+      for (const j of exactAt[K]) nc[j] ^= 1;
+      push(K, nd, nc);
+    }
+    for (const { to, j } of exactAdj[pos]) {
+      if (c[j] !== 1) continue;
+      const nd = d.slice();
+      for (const z of doorsAt[to]) nd[z] ^= 1;
+      const nc = c.slice();
+      for (const jj of exactAt[to]) nc[jj] ^= 1;
+      push(to, nd, nc);
+    }
+  }
+
+  const X = explore(G, { mode: "goal", revisit: true }, cap);
+  const concrete = new Set();
+  for (const st of X.states) if (!insideCompressed[st.pos]) concrete.add(project(st));
+  let missingInHybrid = 0;
+  let missingInConcrete = 0;
+  for (const k of concrete) if (!seen.has(k)) missingInHybrid++;
+  for (const k of seen) if (!concrete.has(k)) missingInConcrete++;
+  return {
+    truncated: truncated || X.truncated,
+    compressed: compressed.length,
+    exactHallways,
+    exactEdges: exactEdges.length,
+    concreteStates: X.states.length,
+    projectedStates: concrete.size,
+    hybridStates: seen.size,
+    missingInHybrid,
+    missingInConcrete,
+    equal: missingInHybrid === 0 && missingInConcrete === 0,
+    concreteGoal: X.states.some((st) => st.pos === G.t),
+    hybridGoal,
+  };
+}
+
 // Check the lemma on this concrete instance: the set of concrete states in
 // which the agent stands on a junction must equal the abstract model's
 // reachable set (after reading door bits off the concrete edge states).
@@ -508,12 +627,28 @@ function humanDifficulty(G, X, winnable, pathStates) {
   };
 }
 
+// Human-difficulty score (VISIT_ALL, no revisits) used to design and order
+// stages: trap depths + ambiguous steps + density + log of the walk count.
+// Needs analyze()'s human metrics; avgDeg is over the usable (derived) edges.
+function difficultyFrom(r, n, avgDeg) {
+  const h = r.human;
+  const depthSum = h.plausibleTraps.reduce((s, t) => s + t.depth, 0);
+  return depthSum + 2 * h.ambiguousSteps + 5 * (avgDeg - 3) + 2 * Math.log2(Math.max(1, r.walkCount));
+}
+
+function difficulty(G, r) {
+  if (!r || !r.human) return null;
+  let real = 0;
+  for (let k = 0; k < G.edges.length; k++) if (derivedEdge(G, k)) real++;
+  return difficultyFrom(r, G.n, (2 * real) / G.n);
+}
+
 const api = {
   OFF, ON, FIXED, MAX_VERTICES,
   compile, walkable, tracksVisited, initialState, isGoal, legalMoves, step,
   explore, analyze, reachNoRevisitP, derivedEdge, countHamPathsDerived,
-  hubStructure, abstractReach, verifyLemma, hubDoors,
-  derivedAdjacency, looksPlausible,
+  hubStructure, abstractReach, verifyLemma, verifyLemmaHybrid, hubDoors,
+  derivedAdjacency, looksPlausible, difficultyFrom, difficulty,
 };
 if (typeof module !== "undefined" && module.exports) module.exports = api;
 else root.IFWEngine = api;

@@ -1,4 +1,4 @@
-// Sample levels for the lab: small hard VISIT_ALL levels and proof demos.
+// Sample levels for the lab: small hard VISIT_ALL levels, fixed-edge levels and proof demos.
 var IFW_SAMPLES = [
  {
   "vertices": {
@@ -675,6 +675,218 @@ var IFW_SAMPLES = [
   "note_en": "One solution out of 7856 walks. 13 plausible traps (up to 11 moves before you notice), 8/15 ambiguous steps. At most 4 crossings, none at a shallow angle. 4 decoy edges."
  },
  {
+  "vertices": {
+   "v0": {
+    "x": 400,
+    "y": 400
+   },
+   "v1": {
+    "x": 400,
+    "y": 230
+   },
+   "v2": {
+    "x": 547,
+    "y": 315
+   },
+   "v3": {
+    "x": 547,
+    "y": 485
+   },
+   "v4": {
+    "x": 400,
+    "y": 570
+   },
+   "v5": {
+    "x": 253,
+    "y": 485
+   },
+   "v6": {
+    "x": 253,
+    "y": 315
+   }
+  },
+  "edges": [
+   [
+    "v0",
+    "v1",
+    1
+   ],
+   [
+    "v0",
+    "v2",
+    0
+   ],
+   [
+    "v0",
+    "v3",
+    1
+   ],
+   [
+    "v0",
+    "v4",
+    2
+   ],
+   [
+    "v0",
+    "v5",
+    1
+   ],
+   [
+    "v0",
+    "v6",
+    0
+   ],
+   [
+    "v1",
+    "v2",
+    1
+   ],
+   [
+    "v1",
+    "v6",
+    1
+   ],
+   [
+    "v2",
+    "v3",
+    1
+   ],
+   [
+    "v3",
+    "v4",
+    1
+   ],
+   [
+    "v4",
+    "v5",
+    1
+   ],
+   [
+    "v5",
+    "v6",
+    1
+   ]
+  ],
+  "start": "v4",
+  "goal": null,
+  "mode": "all",
+  "canRevisit": true,
+  "name": "固定辺 1(六角形・7頂点)",
+  "name_en": "Fixed edges 1 (hexagon, 7 vertices)",
+  "note": "全部通る・再訪あり。最短18手(最短解2本)、固定辺1本。再訪なしでは解けず、固定辺を全部オフ(または全部オン)にしても解けない。初手3通り中正解1、詰み状態26%。",
+  "note_en": "Visit all, revisits allowed. Shortest solution 18 moves (2 shortest), 1 fixed edges. Unsolvable without revisits, and unsolvable if the fixed edges are all turned OFF (or all ON). 1 of 3 first moves are safe; 26% of states are dead."
+ },
+ {
+  "vertices": {
+   "v0": {
+    "x": 100,
+    "y": 100
+   },
+   "v1": {
+    "x": 270,
+    "y": 100
+   },
+   "v2": {
+    "x": 440,
+    "y": 100
+   },
+   "v3": {
+    "x": 100,
+    "y": 270
+   },
+   "v4": {
+    "x": 270,
+    "y": 270
+   },
+   "v5": {
+    "x": 440,
+    "y": 270
+   },
+   "v6": {
+    "x": 100,
+    "y": 440
+   },
+   "v7": {
+    "x": 270,
+    "y": 440
+   },
+   "v8": {
+    "x": 440,
+    "y": 440
+   }
+  },
+  "edges": [
+   [
+    "v0",
+    "v1",
+    0
+   ],
+   [
+    "v0",
+    "v3",
+    1
+   ],
+   [
+    "v1",
+    "v2",
+    2
+   ],
+   [
+    "v1",
+    "v4",
+    0
+   ],
+   [
+    "v2",
+    "v5",
+    0
+   ],
+   [
+    "v3",
+    "v4",
+    0
+   ],
+   [
+    "v3",
+    "v6",
+    1
+   ],
+   [
+    "v4",
+    "v5",
+    1
+   ],
+   [
+    "v4",
+    "v7",
+    0
+   ],
+   [
+    "v5",
+    "v8",
+    1
+   ],
+   [
+    "v6",
+    "v7",
+    2
+   ],
+   [
+    "v7",
+    "v8",
+    1
+   ]
+  ],
+  "start": "v1",
+  "goal": null,
+  "mode": "all",
+  "canRevisit": true,
+  "name": "固定辺 2(3×3・9頂点)",
+  "name_en": "Fixed edges 2 (3x3, 9 vertices)",
+  "note": "全部通る・再訪あり。最短29手(最短解2本)、固定辺2本。再訪なしでは解けず、固定辺を全部オフ(または全部オン)にしても解けない。初手1通り中正解1、詰み状態11%。",
+  "note_en": "Visit all, revisits allowed. Shortest solution 29 moves (2 shortest), 2 fixed edges. Unsolvable without revisits, and unsolvable if the fixed edges are all turned OFF (or all ON). 1 of 1 first moves are safe; 11% of states are dead."
+ },
+ {
   "name": "ハミルトン路帰着のデモ",
   "vertices": {
    "s": {
@@ -786,31 +998,31 @@ var IFW_SAMPLES = [
     "x": 80,
     "y": 300
    },
-   "a": {
+   "v1": {
     "x": 200,
     "y": 300
    },
-   "H1": {
+   "v2": {
     "x": 330,
     "y": 300
    },
-   "x1": {
+   "v3": {
     "x": 500,
     "y": 150
    },
-   "x2": {
+   "v4": {
     "x": 500,
     "y": 300
    },
-   "x3": {
+   "v5": {
     "x": 500,
     "y": 450
    },
-   "H2": {
+   "v6": {
     "x": 670,
     "y": 300
    },
-   "b": {
+   "v7": {
     "x": 800,
     "y": 300
    },
@@ -822,51 +1034,51 @@ var IFW_SAMPLES = [
   "edges": [
    [
     "s",
-    "a",
+    "v1",
     1
    ],
    [
-    "a",
-    "H1",
+    "v1",
+    "v2",
     0
    ],
    [
-    "H1",
-    "x1",
+    "v2",
+    "v3",
     1
    ],
    [
-    "x1",
-    "H2",
+    "v3",
+    "v6",
     0
    ],
    [
-    "H1",
-    "x2",
+    "v2",
+    "v4",
     0
    ],
    [
-    "x2",
-    "H2",
+    "v4",
+    "v6",
     0
    ],
    [
-    "H1",
-    "x3",
+    "v2",
+    "v5",
     0
    ],
    [
-    "x3",
-    "H2",
+    "v5",
+    "v6",
     0
    ],
    [
-    "H2",
-    "b",
+    "v6",
+    "v7",
     1
    ],
    [
-    "b",
+    "v7",
     "t",
     0
    ]

@@ -19,7 +19,7 @@
   <div class="title-screen" id="titleScreen">
     <div class="title-inner">
       <div class="title-logo mono-display glow">INCIDENT_<wbr>FLIP_WALK</div>
-      <p class="title-tagline">a walk on a graph that rewires itself under your feet</p>
+      <p class="title-tagline" data-ja="歩くたびに道が組み変わるグラフの上を歩く">a walk on a graph that rewires itself under your feet</p>
       <div class="boot-log" id="bootLog"></div>
       <div class="title-prompt" id="titlePrompt" hidden>TAP TO START</div>
     </div>
@@ -43,45 +43,48 @@
   </header>
 
   <nav class="tabbar">
-    <button class="tab-btn" id="tabMap">// MAP</button>
-    <button class="tab-btn" id="tabBoard">// BOARD</button>
+    <button class="tab-btn" id="tabMap" data-ja="マップ">MAP</button>
+    <button class="tab-btn" id="tabBoard" data-ja="盤面">BOARD</button>
   </nav>
 
   <main class="views">
     <section class="view" id="viewMap">
       <section class="panel stagemap-panel">
         <div class="panel-title-row">
-          <div class="panel-title">// STAGE MAP</div>
-          <button id="btnHowToPlayMap" class="howto-btn">HOW TO PLAY</button>
+          <div class="panel-title" data-ja="ステージマップ">STAGE MAP</div>
+          <div class="panel-title-actions">
+            <button id="btnLang" class="howto-btn" data-ja="ENGLISH">日本語</button>
+            <button id="btnHowToPlayMap" class="howto-btn" data-ja="遊び方">HOW TO PLAY</button>
+          </div>
         </div>
-        <p class="board-hint">TAP A STAGE TO LOAD IT. DASHED AMBER BRANCHES ARE OPTIONAL BONUS PUZZLES.</p>
+        <p class="board-hint" data-ja="ステージをタップして開始。オレンジの点線の枝は、挑戦してもしなくてもいいボーナス問題。">TAP A STAGE TO LOAD IT. DASHED AMBER BRANCHES ARE OPTIONAL BONUS PUZZLES.</p>
         <div class="stagemap-scroll">
           <svg id="stageTree" class="stage-tree" xmlns="http://www.w3.org/2000/svg"></svg>
         </div>
       </section>
 
       <section class="panel controls-panel">
-        <div class="panel-title">// SETTINGS</div>
+        <div class="panel-title" data-ja="設定">SETTINGS</div>
         <div class="controls-row">
           <div class="field">
-            <label for="levelSelect">LEVEL</label>
+            <label for="levelSelect" data-ja="ステージ">LEVEL</label>
             <select id="levelSelect"></select>
           </div>
           <div class="field" id="diffGroup">
-            <label for="diffSelect">DIFFICULTY</label>
+            <label for="diffSelect" data-ja="難易度">DIFFICULTY</label>
             <select id="diffSelect">
-              <option value="easy">EASY</option>
-              <option value="medium" selected>MEDIUM</option>
-              <option value="hard">HARD</option>
-              <option value="expert">EXPERT</option>
+              <option value="easy" data-ja="かんたん">EASY</option>
+              <option value="medium" selected data-ja="ふつう">MEDIUM</option>
+              <option value="hard" data-ja="むずかしい">HARD</option>
+              <option value="expert" data-ja="超むずかしい">EXPERT</option>
             </select>
           </div>
           <div class="toggle-field">
-            <label>REVISIT</label>
+            <label data-ja="再訪">REVISIT</label>
             <label class="toggle">
               <input type="checkbox" id="chkRevisit" />
               <span class="toggle-track"><span class="toggle-thumb"></span></span>
-              can revisit
+              <span data-ja="同じ点にもう一度行ける">can revisit</span>
             </label>
           </div>
         </div>
@@ -89,22 +92,22 @@
       </section>
 
       <section class="panel info-panel">
-        <div class="panel-title">// CURRENT STAGE</div>
+        <div class="panel-title" data-ja="現在のステージ">CURRENT STAGE</div>
         <dl class="info-list">
-          <div><dt>STAGE</dt><dd id="infoStageName">-</dd></div>
-          <div><dt>CLEAR COND.</dt><dd id="infoCond">-</dd></div>
-          <div><dt>OPTIMAL PATH</dt><dd id="infoOptimal">-</dd></div>
+          <div><dt data-ja="ステージ">STAGE</dt><dd id="infoStageName">-</dd></div>
+          <div><dt data-ja="クリア条件">CLEAR COND.</dt><dd id="infoCond">-</dd></div>
+          <div><dt data-ja="最短手数">OPTIMAL PATH</dt><dd id="infoOptimal">-</dd></div>
         </dl>
       </section>
     </section>
 
     <section class="view" id="viewBoard" hidden>
       <section class="panel board-panel">
-        <div class="panel-title">// BOARD</div>
+        <div class="panel-title" data-ja="盤面">BOARD</div>
         <div class="board-actions-row">
-          <button id="btnBackToMap">&larr; MAP</button>
-          <button id="btnUndo" disabled>UNDO</button>
-          <button id="btnReset">RESET</button>
+          <button id="btnBackToMap" data-ja="&larr; マップ">&larr; MAP</button>
+          <button id="btnUndo" disabled data-ja="1手戻す">UNDO</button>
+          <button id="btnReset" data-ja="リセット">RESET</button>
         </div>
         <div class="board-stage">
           <svg id="boardSvg" class="board-svg" xmlns="http://www.w3.org/2000/svg"></svg>
@@ -116,9 +119,9 @@
             </div>
           </div>
         </div>
-        <p class="board-hint">CLICK A LIT NODE TO WALK. ARRIVAL FLIPS ALL INCIDENT EDGES.</p>
+        <p class="board-hint" data-ja="光っている点をタップして移動。着いた点につながる辺は、すべてオン/オフが反転する。">CLICK A LIT NODE TO WALK. ARRIVAL FLIPS ALL INCIDENT EDGES.</p>
         <p class="board-status-line" id="boardStatus">IN PROGRESS</p>
-        <button id="btnSkip" class="ghost">STUCK? SKIP THIS STAGE &rarr;</button>
+        <button id="btnSkip" class="ghost" data-ja="詰まった? このステージをスキップ &rarr;">STUCK? SKIP THIS STAGE &rarr;</button>
       </section>
     </section>
   </main>
@@ -126,29 +129,29 @@
   </div>
 
   <dialog id="rulesDialog" class="rules-dialog">
-    <div class="panel-title">// HOW TO PLAY</div>
+    <div class="panel-title" data-ja="遊び方">HOW TO PLAY</div>
 
-    <p class="rules-p"><strong>THE ONE RULE:</strong> every time you arrive at a node, <em>every</em> edge touching that node flips &mdash; walkable (solid green) becomes blocked (dashed grey), and blocked becomes walkable.</p>
+    <p class="rules-p" data-ja="&lt;strong&gt;ルールはひとつ:&lt;/strong&gt; 点に着くたびに、その点につながる&lt;em&gt;すべての&lt;/em&gt;辺が反転する。通れる辺(緑の実線)は通れなく(灰色の点線)なり、通れない辺は通れるようになる。"><strong>THE ONE RULE:</strong> every time you arrive at a node, <em>every</em> edge touching that node flips &mdash; walkable (solid green) becomes blocked (dashed grey), and blocked becomes walkable.</p>
 
     <div class="rules-demo" id="rulesDemo">
       <svg id="rulesDemoSvg" viewBox="0 0 220 90" xmlns="http://www.w3.org/2000/svg"></svg>
       <p class="rules-demo-caption">tap the lit node to see it flip</p>
     </div>
 
-    <p class="rules-p">You can only step along a <strong>solid</strong> edge. Landing on a node immediately rewires it, so the path you just walked in on is usually gone behind you.</p>
+    <p class="rules-p" data-ja="進めるのは&lt;strong&gt;実線&lt;/strong&gt;の辺だけ。着いた瞬間にその点の辺が組み変わるので、たいてい今通ってきた道は後ろで消える。">You can only step along a <strong>solid</strong> edge. Landing on a node immediately rewires it, so the path you just walked in on is usually gone behind you.</p>
 
     <dl class="info-list">
-      <div><dt>VISIT_ALL</dt><dd>touch every node once</dd></div>
-      <div><dt>CAN REVISIT</dt><dd>off = each node once (NP-complete); on = anything goes (open problem!)</dd></div>
-      <div><dt>STUCK?</dt><dd>UNDO, RESET, or SKIP the stage</dd></div>
+      <div><dt>VISIT_ALL</dt><dd data-ja="すべての点を1回ずつ通る">touch every node once</dd></div>
+      <div><dt data-ja="再訪">CAN REVISIT</dt><dd data-ja="オフ = 各点1回まで(NP完全)/ オン = 何度でも(計算量は未解決!)">off = each node once (NP-complete); on = anything goes (open problem!)</dd></div>
+      <div><dt data-ja="詰まったら">STUCK?</dt><dd data-ja="1手戻す・リセット・スキップ">UNDO, RESET, or SKIP the stage</dd></div>
     </dl>
 
-    <button id="btnCloseRules" class="primary full">GOT IT</button>
+    <button id="btnCloseRules" class="primary full" data-ja="わかった">GOT IT</button>
   </dialog>
 </div>
 
 <script src="presets.js"></script>
-<script src="handmade-extra.js"></script>
+<script src="bonus.js"></script>
 <script type="module" src="main.js"></script>
 </body>
 </html>

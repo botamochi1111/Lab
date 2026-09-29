@@ -1,0 +1,3 @@
+Level 28: {"n":20,"realEdges":36,"decoys":4,"crossings":3,"realAvgDeg":3.6,"endVisibleDeg":3,"minVisibleDegNonStart":2,"walks":2848,"plausibleTraps":13,"maxDepth":2,"ambiguous":5,"steps":19,"greedySolves":false,"difficulty":50}
+Level 29: {"n":20,"realEdges":37,"decoys":4,"crossings":4,"realAvgDeg":3.7,"endVisibleDeg":3,"minVisibleDegNonStart":3,"walks":16360,"plausibleTraps":14,"maxDepth":11,"ambiguous":6,"steps":19,"greedySolves":false,"difficulty":92.5}
+Level 30: {"n":20,"realEdges":37,"decoys":3,"crossings":4,"realAvgDeg":3.7,"endVisibleDeg":3,"minVisibleDegNonStart":2,"walks":26444,"plausibleTraps":12,"maxDepth":14,"ambiguous":7,"steps":19,"greedySolves":false,"difficulty":100.9}

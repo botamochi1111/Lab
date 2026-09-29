@@ -1,0 +1,5 @@
+Level 19: {"n":18,"realEdges":30,"decoys":4,"crossings":4,"realAvgDeg":3.33,"endVisibleDeg":3,"minVisibleDegNonStart":2,"walks":2067,"plausibleTraps":9,"maxDepth":13,"ambiguous":5,"steps":17,"greedySolves":false,"difficulty":78.7}
+Level 20: {"n":19,"realEdges":32,"decoys":4,"crossings":3,"realAvgDeg":3.37,"endVisibleDeg":3,"minVisibleDegNonStart":2,"walks":4834,"plausibleTraps":11,"maxDepth":4,"ambiguous":8,"steps":18,"greedySolves":false,"difficulty":61.3}
+Level 21: {"n":19,"realEdges":35,"decoys":4,"crossings":3,"realAvgDeg":3.68,"endVisibleDeg":3,"minVisibleDegNonStart":3,"walks":15751,"plausibleTraps":13,"maxDepth":11,"ambiguous":8,"steps":18,"greedySolves":false,"difficulty":95.3}
+Level 22: {"n":20,"realEdges":38,"decoys":3,"crossings":1,"realAvgDeg":3.8,"endVisibleDeg":3,"minVisibleDegNonStart":3,"walks":31017,"plausibleTraps":12,"maxDepth":16,"ambiguous":4,"steps":19,"greedySolves":false,"difficulty":89.8}
+Level 23: {"n":20,"realEdges":36,"decoys":2,"crossings":4,"realAvgDeg":3.6,"endVisibleDeg":3,"minVisibleDegNonStart":2,"walks":13279,"plausibleTraps":10,"maxDepth":8,"ambiguous":6,"steps":19,"greedySolves":false,"difficulty":74.4}

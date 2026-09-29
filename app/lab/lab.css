@@ -66,6 +66,7 @@ button.primary { background: #2563eb; color: #fff; border-color: #2563eb; }
 .sw { display: inline-block; width: 28px; height: 0; margin-right: 6px; vertical-align: middle; }
 .sw.off { border-top: 2px dashed #bbb; }
 .sw.on { border-top: 3px solid #111; }
+.sw.fixed { border-top: 5px double #111; }
 .sw.derived { border-top: 6px solid #4aa3ff; opacity: 0.4; }
 
 dialog { background: #fff; color: #222; border: 1px solid #ccc; border-radius: 6px; width: min(720px, 92vw); }

@@ -121,3 +121,12 @@ export function forkRole(i, total) {
 export function getChildren(i, total) {
   return scheduleFor(total).children[i] || [];
 }
+
+// Optional bonus side branches: on normal (non-fork) stages from stage 5 on
+// (the earliest stages are too small to make a harder puzzle from the same
+// drawing), never on two stages in a row, and not on the last stage.
+const BONUS_FROM = 4;
+export function hasBonus(i, total) {
+  if (i < BONUS_FROM || i >= total - 1 || forkRole(i, total) !== "normal") return false;
+  return !hasBonus(i - 1, total);
+}

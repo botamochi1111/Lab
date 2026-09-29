@@ -56,6 +56,8 @@ function unlockAll(p, indices) {
 export function markCleared(progress, mode, index, children) {
   const p = progress[mode];
   p.cleared[index] = true;
+  // Clearing a previously skipped stage turns it into a normal clear.
+  p.skipped[index] = false;
   unlockAll(p, children);
   saveProgress(progress);
 }

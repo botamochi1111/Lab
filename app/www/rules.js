@@ -1,6 +1,8 @@
 // "How to play" dialog: static rule text plus a tiny interactive demo of the
 // one core mechanic (arriving at a node flips every edge touching it).
 
+import { t as L, onLangChange } from "./lang.js";
+
 const NS = "http://www.w3.org/2000/svg";
 const el = (tag, attrs) => {
   const node = document.createElementNS(NS, tag);
@@ -39,7 +41,7 @@ function initFlipDemo(svg, caption) {
   svg.addEventListener("click", () => {
     walkable = walkable.map((w) => !w);
     render(true);
-    if (caption) caption.textContent = "flipped! tap again to flip back";
+    if (caption) caption.textContent = L("flipped! tap again to flip back", "反転した! もう一度タップで元に戻る");
   });
 }
 
@@ -50,6 +52,9 @@ export function initRules({ helpBtn }) {
   const caption = document.querySelector(".rules-demo-caption");
 
   initFlipDemo(demoSvg, caption);
+  const idleCaption = () => { caption.textContent = L("tap the lit node to see it flip", "光っている点をタップすると反転する"); };
+  idleCaption();
+  onLangChange(idleCaption);
 
   function open() {
     if (typeof dialog.showModal === "function") dialog.showModal();

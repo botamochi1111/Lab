@@ -40,14 +40,19 @@ var STATIC_EN = {
   "メモ": "Note",
   "初期オフ": "Initially OFF",
   "初期オン": "Initially ON",
+  "固定(常に通れる・反転しない)": "Fixed (always walkable, never flips)",
   "本当に使える辺(VISIT_ALL・再訪なし)": "Actually usable edge (VISIT_ALL, no revisit)",
   "1手戻す": "Undo move",
   "最初から": "Restart",
   "厳密に解析する": "Analyze exactly",
   "終了": "Exit",
-  "再訪ありS→Tのハブ分解補題の前提チェックと、具体グラフの全状態探索 ⇔ 補題の抽象モデルの一致確認。":
-    "Checks the hypotheses of the hub-decomposition lemma for S→T with revisits, and compares a full state search of the concrete graph with the lemma's abstract model.",
-  "補題を検証(到達集合の一致)": "Verify lemma (reachable sets match)",
+  "ゲームの全ステージの難易度一覧": "Difficulty of every game stage",
+  "どんなグラフでも使える全状態探索と、再訪ありS→Tのハブ分解補題の検証。":
+    "A full state search that works on any graph, and checks of the hub-decomposition lemma for S→T with revisits.",
+  "S→T 全状態探索(条件なし)": "S→T full state search (any graph)",
+  "補題の検証(証明用)": "Lemma checks (for the proof)",
+  "補題の前提を満たす形に変換": "Convert to satisfy the lemma",
+  "補題を検証(そのままのグラフで)": "Verify lemma (on the graph as is)",
   "再訪なしS→T: P判定と全探索を比較": "S→T without revisits: compare P test with full search",
   "読み込む": "Load",
   "コピー": "Copy",
@@ -62,7 +67,7 @@ function applyStaticLang() {
   var nodes = [];
   while (walker.nextNode()) nodes.push(walker.currentNode);
   nodes.forEach(function (node) {
-    if (node.parentElement.closest("#analysisOut, #proofOut, #proofChecks, #editStats, #playStatus, #doorList, #toolHint, #sampleSelect, textarea")) return;
+    if (node.parentElement.closest("#analysisOut, #stageTableOut, #stOut, #proofOut, #proofChecks, #editStats, #playStatus, #doorList, #toolHint, #sampleSelect, textarea")) return;
     if (!staticOriginals.has(node)) {
       var key = node.nodeValue.trim();
       if (!STATIC_EN[key]) return;
