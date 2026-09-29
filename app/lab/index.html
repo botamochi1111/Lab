@@ -17,7 +17,7 @@ window.addEventListener("error", function (e) {
 });
 </script>
 <header class="bar">
-  <strong class="brand">IFW LAB</strong> <span class="small" id="labVersion">v2026-09-29e</span>
+  <strong class="brand">IFW LAB</strong> <span class="small" id="labVersion">v2026-09-29f</span>
   <button id="btnLang">English</button>
   <select id="sampleSelect" title="レベルを読み込む"></select>
   <button id="btnNew">新規</button>
@@ -46,7 +46,8 @@ window.addEventListener("error", function (e) {
   <button id="btnEditUndo" title="Ctrl+Z">元に戻す</button>
   <button id="btnEditRedo" title="Ctrl+Y / Ctrl+Shift+Z">やり直し</button>
   <span class="sep"></span>
-  <label class="check"><input type="checkbox" id="chkDerived"> 本当に使える辺を表示</label>
+  <!-- Usable-edge overlay: hidden for now (code kept; remove "hidden" to bring it back). -->
+  <label class="check" hidden><input type="checkbox" id="chkDerived"> 本当に使える辺を表示</label>
   <!-- Hub-door overlay: hidden for now (code kept; remove "hidden" to bring it back). -->
   <label class="check" hidden><input type="checkbox" id="chkDoors"> ハブの扉を表示</label>
 </nav>
@@ -73,7 +74,7 @@ window.addEventListener("error", function (e) {
         <div><span class="sw off"></span>初期オフ</div>
         <div><span class="sw on"></span>初期オン</div>
         <div><span class="sw fixed"></span>固定(常に通れる・反転しない)</div>
-        <div><span class="sw derived"></span>本当に使える辺(VISIT_ALL・再訪なし)</div>
+        <div hidden><span class="sw derived"></span>本当に使える辺(VISIT_ALL・再訪なし)</div>
       </div>
     </div>
 
@@ -83,7 +84,7 @@ window.addEventListener("error", function (e) {
         <button id="btnReset">最初から</button>
       </div>
       <div id="playStatus" class="stats"></div>
-      <div id="doorList" class="stats"></div>
+      <div id="doorList" class="stats" hidden></div>
     </div>
 
     <div class="tab" id="tab-analyze" hidden>
@@ -101,16 +102,19 @@ window.addEventListener("error", function (e) {
     </div>
 
     <div class="tab" id="tab-proof" hidden>
-      <p class="small">どんなグラフでも使える全状態探索と、再訪ありS→Tのハブ分解補題の検証。</p>
+      <p class="small">どんなグラフでも使えるS→Tの全状態探索。</p>
       <button id="btnSTSearch" class="primary">S→T 全状態探索(条件なし)</button>
       <div id="stOut" class="stats"></div>
       <hr>
-      <div class="small">補題の検証(証明用)</div>
-      <button id="btnLemma">補題を検証(そのままのグラフで)</button>
-      <button id="btnConform">補題の前提を満たす形に変換</button>
       <button id="btnPCheck">再訪なしS→T: P判定と全探索を比較</button>
       <div id="proofOut" class="stats"></div>
-      <div id="proofChecks" class="stats"></div>
+      <!-- Hub-decomposition lemma tools: hidden for now (code kept; remove "hidden" to bring them back). -->
+      <div hidden>
+        <div class="small">補題の検証(証明用)</div>
+        <button id="btnLemma">補題を検証(そのままのグラフで)</button>
+        <button id="btnConform">補題の前提を満たす形に変換</button>
+        <div id="proofChecks" class="stats"></div>
+      </div>
     </div>
   </aside>
 </main>

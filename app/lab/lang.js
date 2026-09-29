@@ -47,8 +47,7 @@ var STATIC_EN = {
   "厳密に解析する": "Analyze exactly",
   "終了": "Exit",
   "ゲームの全ステージの難易度一覧": "Difficulty of every game stage",
-  "どんなグラフでも使える全状態探索と、再訪ありS→Tのハブ分解補題の検証。":
-    "A full state search that works on any graph, and checks of the hub-decomposition lemma for S→T with revisits.",
+  "どんなグラフでも使えるS→Tの全状態探索。": "A full S→T state search that works on any graph.",
   "S→T 全状態探索(条件なし)": "S→T full state search (any graph)",
   "補題の検証(証明用)": "Lemma checks (for the proof)",
   "補題の前提を満たす形に変換": "Convert to satisfy the lemma",

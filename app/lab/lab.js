@@ -272,20 +272,12 @@ function render() {
 
 function renderEditStats() {
   const G = compiled();
-  const s = G.s;
-  let decoys = 0;
-  let derived = 0;
-  G.edges.forEach((e, k) => {
-    if (E.derivedEdge(G, k)) derived++;
-    else if (s != null) decoys++;
-  });
   const counts = [0, 0, 0];
   G.edges.forEach((e) => counts[e.w]++);
   $("editStats").innerHTML = `<table>
     <tr><td>${L("頂点", "Vertices")}</td><td>${G.n}</td></tr>
     <tr><td>${L("辺", "Edges")}</td><td>${G.edges.length}${L(`(オフ ${counts[0]} / オン ${counts[1]}${counts[2] ? ` / 固定 ${counts[2]}` : ""})`, ` (OFF ${counts[0]} / ON ${counts[1]}${counts[2] ? ` / FIXED ${counts[2]}` : ""})`)}</td></tr>
     <tr><td>${L("スタート / ゴール", "Start / goal")}</td><td>${level.start || "-"} / ${level.mode === "goal" ? level.goal || "-" : L("(なし)", "(none)")}</td></tr>
-    ${level.mode === "all" && !level.canRevisit ? `<tr><td>${L("本当に使える辺", "Usable edges")}</td><td>${L(`${derived}本(一度も通れない飾り ${decoys}本)`, `${derived} (${decoys} decoys that can never be used)`)}</td></tr>` : ""}
   </table>`;
 }
 
