@@ -78,3 +78,6 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.4); }
   .side { width: auto; border-left: none; border-top: 1px solid #ddd; max-height: 45vh; }
   .canvas-wrap { min-height: 55vh; }
 }
+
+/* Let the hidden attribute win over display rules like .check { display: flex }. */
+[hidden] { display: none !important; }
