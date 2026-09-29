@@ -1,6 +1,7 @@
 # Incident Flip Walk
 
 `game/index.html` をブラウザで開いてプレイ(ダブルクリックで開けます)。
+GitHub Pages ではサイトのトップを開くとゲームに移動します(ラボは `app/lab/index.html`)。
 
 ## 中身
 
