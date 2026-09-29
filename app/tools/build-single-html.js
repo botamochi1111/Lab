@@ -47,6 +47,8 @@ const css = read("styles.css").replace(/url\("([^"]+\.woff2)"\)/g, (_, f) => {
 // ---- assemble ----
 const safe = (s) => s.replace(/<\/script/gi, "<\\/script");
 let html = read("index.html");
+// The "open game/index.html instead" notice is only for the multi-file source page.
+html = html.replace(/<!-- file-notice[\s\S]*?<!-- \/file-notice -->\r?\n?/, "");
 html = html.replace('<link rel="stylesheet" href="styles.css">', () => `<style>\n${css}\n</style>`);
 html = html.replace(/<script src="([^"]+)"><\/script>/g, (_, f) => `<script>\n${safe(read(f))}\n</script>`);
 html = html.replace('<script type="module" src="main.js"></script>', () =>

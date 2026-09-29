@@ -152,6 +152,17 @@
 
 <script src="presets.js"></script>
 <script src="bonus.js"></script>
+<!-- file-notice: removed by tools/build-single-html.js -->
+<script>
+// Browsers won't load the separate module files when this page is opened by
+// double-click (file://). Say where the playable version is instead of showing a dead page.
+if (location.protocol === "file:") {
+  document.body.innerHTML = '<p style="color:#33ff66;font-family:monospace;padding:24px;line-height:1.8">' +
+    'このファイルはダブルクリックでは動きません(ゲームのソース用)。<br>遊ぶときは <b>game/index.html</b> を開いてください。<br><br>' +
+    'This file does not run when opened directly (it is the game source).<br>To play, open <b>game/index.html</b>.</p>';
+}
+</script>
+<!-- /file-notice -->
 <script type="module" src="main.js"></script>
 </body>
 </html>
