@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d1117">
+<title>Incident Flip Walk Terminal</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="crt-root pre-start" id="crtRoot">
+  <canvas id="bgCanvas" aria-hidden="true"></canvas>
+  <div class="dot-grid" aria-hidden="true"></div>
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="scan-sweep" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <div class="title-screen" id="titleScreen">
+    <div class="title-inner">
+      <div class="title-logo mono-display glow">INCIDENT_<wbr>FLIP_WALK</div>
+      <p class="title-tagline">a walk on a graph that rewires itself under your feet</p>
+      <div class="boot-log" id="bootLog"></div>
+      <div class="title-prompt" id="titlePrompt" hidden>TAP TO START</div>
+    </div>
+  </div>
+
+  <div id="appChrome">
+  <header class="statusbar">
+    <span class="brand glow">INCIDENT_FLIP_WALK</span>
+    <div class="statusbar-tags">
+      <span class="tag" id="tagNodes">[NODES:-]</span>
+      <span class="tag" id="tagEdges">[EDGES:-]</span>
+      <span class="tag" id="tagMoves">[MOVES:0]</span>
+      <span class="tag" id="tagStage">[STAGE:-]</span>
+      <span class="tag" id="tagMode">[MODE:-]</span>
+      <span class="tag tag-warn" id="tagRevisit">[REVISIT:OFF]</span>
+      <span class="tag tag-warn" id="tagDev" hidden>[DEV]</span>
+    </div>
+    <div class="statusbar-right">
+      <span id="clock">00:00:00</span><span class="caret">&#9608;</span>
+    </div>
+  </header>
+
+  <nav class="tabbar">
+    <button class="tab-btn" id="tabMap">// MAP</button>
+    <button class="tab-btn" id="tabBoard">// BOARD</button>
+  </nav>
+
+  <main class="views">
+    <section class="view" id="viewMap">
+      <section class="panel stagemap-panel">
+        <div class="panel-title-row">
+          <div class="panel-title">// STAGE MAP</div>
+          <button id="btnHowToPlayMap" class="howto-btn">HOW TO PLAY</button>
+        </div>
+        <p class="board-hint">TAP A STAGE TO LOAD IT. DASHED AMBER BRANCHES ARE OPTIONAL BONUS PUZZLES.</p>
+        <div class="stagemap-scroll">
+          <svg id="stageTree" class="stage-tree" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+      </section>
+
+      <section class="panel controls-panel">
+        <div class="panel-title">// SETTINGS</div>
+        <div class="controls-row">
+          <div class="field">
+            <label for="levelSelect">LEVEL</label>
+            <select id="levelSelect"></select>
+          </div>
+          <div class="field" id="diffGroup">
+            <label for="diffSelect">DIFFICULTY</label>
+            <select id="diffSelect">
+              <option value="easy">EASY</option>
+              <option value="medium" selected>MEDIUM</option>
+              <option value="hard">HARD</option>
+              <option value="expert">EXPERT</option>
+            </select>
+          </div>
+          <div class="toggle-field">
+            <label>REVISIT</label>
+            <label class="toggle">
+              <input type="checkbox" id="chkRevisit" />
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+              can revisit
+            </label>
+          </div>
+        </div>
+        <button id="btnRandom" class="primary big full">RANDOM PUZZLE</button>
+      </section>
+
+      <section class="panel info-panel">
+        <div class="panel-title">// CURRENT STAGE</div>
+        <dl class="info-list">
+          <div><dt>STAGE</dt><dd id="infoStageName">-</dd></div>
+          <div><dt>CLEAR COND.</dt><dd id="infoCond">-</dd></div>
+          <div><dt>OPTIMAL PATH</dt><dd id="infoOptimal">-</dd></div>
+        </dl>
+      </section>
+    </section>
+
+    <section class="view" id="viewBoard" hidden>
+      <section class="panel board-panel">
+        <div class="panel-title">// BOARD</div>
+        <div class="board-actions-row">
+          <button id="btnBackToMap">&larr; MAP</button>
+          <button id="btnUndo" disabled>UNDO</button>
+          <button id="btnReset">RESET</button>
+        </div>
+        <div class="board-stage">
+          <svg id="boardSvg" class="board-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+          <div class="board-overlay" id="boardOverlay" hidden>
+            <div class="board-overlay-inner">
+              <div class="board-overlay-title glow" id="overlayTitle">STAGE CLEAR</div>
+              <p class="board-overlay-subtitle" id="overlaySubtitle"></p>
+              <div class="board-overlay-actions" id="overlayActions"></div>
+            </div>
+          </div>
+        </div>
+        <p class="board-hint">CLICK A LIT NODE TO WALK. ARRIVAL FLIPS ALL INCIDENT EDGES.</p>
+        <p class="board-status-line" id="boardStatus">IN PROGRESS</p>
+        <button id="btnSkip" class="ghost">STUCK? SKIP THIS STAGE &rarr;</button>
+      </section>
+    </section>
+  </main>
+
+  </div>
+
+  <dialog id="rulesDialog" class="rules-dialog">
+    <div class="panel-title">// HOW TO PLAY</div>
+
+    <p class="rules-p"><strong>THE ONE RULE:</strong> every time you arrive at a node, <em>every</em> edge touching that node flips &mdash; walkable (solid green) becomes blocked (dashed grey), and blocked becomes walkable.</p>
+
+    <div class="rules-demo" id="rulesDemo">
+      <svg id="rulesDemoSvg" viewBox="0 0 220 90" xmlns="http://www.w3.org/2000/svg"></svg>
+      <p class="rules-demo-caption">tap the lit node to see it flip</p>
+    </div>
+
+    <p class="rules-p">You can only step along a <strong>solid</strong> edge. Landing on a node immediately rewires it, so the path you just walked in on is usually gone behind you.</p>
+
+    <dl class="info-list">
+      <div><dt>VISIT_ALL</dt><dd>touch every node once</dd></div>
+      <div><dt>CAN REVISIT</dt><dd>off = each node once (NP-complete); on = anything goes (open problem!)</dd></div>
+      <div><dt>STUCK?</dt><dd>UNDO, RESET, or SKIP the stage</dd></div>
+    </dl>
+
+    <button id="btnCloseRules" class="primary full">GOT IT</button>
+  </dialog>
+</div>
+
+<script src="presets.js"></script>
+<script src="handmade-extra.js"></script>
+<script type="module" src="main.js"></script>
+</body>
+</html>

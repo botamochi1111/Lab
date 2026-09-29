@@ -1,17 +1,20 @@
 # Incident Flip Walk
 
-`game/index.html` をブラウザで開いてプレイ。
+`game/index.html` をブラウザで開いてプレイ(ダブルクリックで開けます)。
 
-## 問題
+## 中身
 
-- **規定問題 8 問**（1〜5 は小〜中規模、6〜8 は頂点数多め）
-- **ランダム**で毎回新しい問題を生成
+- **30 ステージ**(分岐・ボーナスあり)+ **ランダム**生成
+- 開発者用: URL の末尾に `?dev=1` を付けると全ステージ解放
 
-## 再生成（開発用）
+## ソースとビルド
 
-規定問題を作り直す場合:
+- ゲームのソースは `app/www`(Android アプリ版も同じソース)
+- `game/index.html` は `app/www` を1ファイルにまとめたもの。`app/www` を編集したら作り直す:
 
 ```bash
-node game/gen-presets.js
-node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('game/presets.json'));fs.writeFileSync('game/presets.js','const PRESETS = '+JSON.stringify(p,null,2)+';\\n');"
+node app/tools/build-single-html.js
 ```
+
+- Android 版: `app/build-android.bat`
+- 問題作成・検証ツール: `app/lab/index.html`

@@ -5,7 +5,7 @@ function edgeKey(a, b) {
   return a < b ? `${a}|${b}` : `${b}|${a}`;
 }
 
-function generatePlanarLayeredGraph(layerSizes, density = 0.5, hasGoal = true, intraProb = 0.3) {
+function generatePlanarLayeredGraph(layerSizes, density = 0.5, hasGoal = true, intraProb = 0.3, crossProb = 0) {
   const layerCount = layerSizes.length;
   const groups = Array.from({ length: layerCount }, () => []);
 
@@ -81,6 +81,10 @@ function generatePlanarLayeredGraph(layerSizes, density = 0.5, hasGoal = true, i
             return (x - cx) * (y - cy) < 0;
           });
           if (!crosses) {
+            addEdge(L1[x], L2[y]);
+            currentEdges.push([x, y]);
+          } else if (Math.random() < crossProb) {
+            // Deliberately allow a non-planar (crossing) edge for variety.
             addEdge(L1[x], L2[y]);
             currentEdges.push([x, y]);
           }
@@ -243,18 +247,18 @@ function bfs(lv, mode = "goal", useDfs = false, noRevisit = true) {
   return null;
 }
 
-function generateLevel(name, layerSizes, minOpt, maxOpt, mode = "goal") {
+function generateLevel(name, layerSizes, minOpt, maxOpt, mode = "goal", crossProb = 0) {
   const hasGoal = mode === "goal";
   const estV = layerSizes.reduce((sum, size) => sum + size, 0);
   const threshold = 20; // 20 vertices for both modes to manage search scaling
   const firstLoopAttempts = estV < threshold ? 20000 : 2000;
   const intraProb = mode === "all" ? 0.90 : 0.30; // High vertical edge probability for Visit All mode
-  
+
   // Both modes must be solvable WITHOUT revisit (No Revisit is the default game state)
   const enforceNoRevisit = true;
 
   for (let attempt = 0; attempt < firstLoopAttempts; attempt++) {
-    const graph = generatePlanarLayeredGraph(layerSizes, 0.45, hasGoal, intraProb);
+    const graph = generatePlanarLayeredGraph(layerSizes, 0.45, hasGoal, intraProb, crossProb);
     
     // Prune mathematically unsolvable graphs for Visit All mode
     if (mode === "all") {
@@ -312,7 +316,7 @@ function generateLevel(name, layerSizes, minOpt, maxOpt, mode = "goal") {
   // Fallback to retry with wider bounds and more attempts
   const fallbackAttempts = estV < threshold ? 10000 : 8000;
   for (let attempt = 0; attempt < fallbackAttempts; attempt++) {
-    const graph = generatePlanarLayeredGraph(layerSizes, 0.65, hasGoal, intraProb);
+    const graph = generatePlanarLayeredGraph(layerSizes, 0.65, hasGoal, intraProb, crossProb);
     
     // Prune mathematically unsolvable graphs for Visit All mode
     if (mode === "all") {
@@ -371,10 +375,12 @@ for (let i = 1; i <= 20; i++) {
     layers.push(Math.min(maxSize, minSize + Math.floor(Math.random() * (maxSize - minSize + 1))));
   }
   layers.push(1); // Target goal layer
-  
+
   const minOpt = Math.min(25, 2 + Math.floor((i - 1) * 0.9));
   const maxOpt = minOpt + 6;
-  goalSpecs.push({ name: `Level ${i}`, layers, min: minOpt, max: maxOpt });
+  // Later (harder) levels occasionally get non-planar (crossing) edges for visual/structural variety.
+  const crossProb = i >= 10 ? 0.15 : 0;
+  goalSpecs.push({ name: `Level ${i}`, layers, min: minOpt, max: maxOpt, crossProb });
 }
 
 const allSpecs = [];
@@ -391,22 +397,122 @@ for (let i = 1; i <= 20; i++) {
   
   const minOpt = Math.min(25, 3 + Math.floor((i - 1) * 0.8));
   const maxOpt = minOpt + 6;
-  allSpecs.push({ name: `Level ${i}`, layers, min: minOpt, max: maxOpt });
+  const crossProb = i >= 10 ? 0.15 : 0;
+  allSpecs.push({ name: `Level ${i}`, layers, min: minOpt, max: maxOpt, crossProb });
 }
 
 console.log("Generating Goal Mode Presets (20 levels)...");
 const presetsGoal = goalSpecs.map(spec => {
-  const lv = generateLevel(spec.name, spec.layers, spec.min, spec.max, "goal");
+  const lv = generateLevel(spec.name, spec.layers, spec.min, spec.max, "goal", spec.crossProb);
   console.log(`Generated Goal Level: ${lv.name} (V=${Object.keys(lv.vertices).length}, E=${lv.edges.length}, opt=${lv._optimal})`);
   return lv;
 });
 
 console.log("\nGenerating Visit All Mode Presets (20 levels)...");
 const presetsAll = allSpecs.map(spec => {
-  const lv = generateLevel(spec.name, spec.layers, spec.min, spec.max, "all");
+  const lv = generateLevel(spec.name, spec.layers, spec.min, spec.max, "all", spec.crossProb);
   console.log(`Generated Visit All Level: ${lv.name} (V=${Object.keys(lv.vertices).length}, E=${lv.edges.length}, opt=${lv._optimal})`);
   return lv;
 });
+
+// --- Handmade compact "hard" levels -----------------------------------
+// Not built from the layered template: small arbitrary (non-planar-friendly)
+// graphs, searched for a long *forced* No-Revisit solution relative to their
+// size (few vertices, but the winning order is not obvious), then hand-picked.
+function circleLayout(ids) {
+  const vertices = {};
+  const cx = 500, cy = 450, r = 300;
+  ids.forEach((id, i) => {
+    const angle = (i / ids.length) * Math.PI * 2 - Math.PI / 2;
+    vertices[id] = {
+      x: Math.round(cx + r * Math.cos(angle)),
+      y: Math.round(cy + r * Math.sin(angle)),
+      label: id === "s" ? "s" : id === "t" ? "t" : id.replace("v", ""),
+      role: id === "s" ? "start" : id === "t" ? "goal" : null,
+    };
+  });
+  return vertices;
+}
+
+function randomSmallGraph(n, edgeProb) {
+  const ids = ["s", ...Array.from({ length: n - 2 }, (_, i) => `v${i + 1}`), "t"];
+  const edgePairs = [];
+  const seen = new Set();
+  const addEdge = (u, v) => {
+    const k = edgeKey(u, v);
+    if (!seen.has(k)) {
+      seen.add(k);
+      edgePairs.push([u, v]);
+    }
+  };
+  for (let i = 0; i < ids.length; i++) {
+    for (let j = i + 1; j < ids.length; j++) {
+      if (Math.random() < edgeProb) addEdge(ids[i], ids[j]);
+    }
+  }
+  return { ids, edgePairs };
+}
+
+function searchHandmade(n, attempts) {
+  const results = [];
+  for (let a = 0; a < attempts; a++) {
+    const edgeProb = 0.3 + Math.random() * 0.3;
+    const { ids, edgePairs } = randomSmallGraph(n, edgeProb);
+
+    const adj = {};
+    ids.forEach((id) => (adj[id] = []));
+    edgePairs.forEach(([u, v]) => {
+      adj[u].push(v);
+      adj[v].push(u);
+    });
+    if (adj["s"].length === 0 || adj["t"].length === 0) continue;
+
+    const seenV = new Set(["s"]);
+    const stack = ["s"];
+    while (stack.length) {
+      const c = stack.pop();
+      for (const nb of adj[c]) {
+        if (!seenV.has(nb)) {
+          seenV.add(nb);
+          stack.push(nb);
+        }
+      }
+    }
+    if (seenV.size !== ids.length) continue; // must be connected
+
+    const rawEdges = edgePairs.map(([u, v]) => [u, v, Math.random() < 0.45 ? 1 : 0]);
+    const lv = { name: "tmp", vertices: circleLayout(ids), edges: rawEdges, start: "s", goal: "t" };
+    const sol = bfs(lv, "goal", true, true); // No Revisit enforced, DFS for speed
+    if (!sol) continue;
+
+    results.push({ lv, optimal: sol.length, ratio: sol.length / ids.length, vCount: ids.length, eCount: edgePairs.length });
+  }
+  results.sort((a, b) => b.ratio - a.ratio || b.optimal - a.optimal);
+  return results;
+}
+
+function pickHandmade(n, attempts, count, minEdges, maxEdges) {
+  const candidates = searchHandmade(n, attempts).filter(
+    (r) => r.eCount >= minEdges && r.eCount <= maxEdges
+  );
+  const picked = [];
+  const seenSig = new Set();
+  for (const c of candidates) {
+    const sig = c.lv.edges.map(([u, v, w]) => `${u}-${v}:${w}`).sort().join(",");
+    if (seenSig.has(sig)) continue;
+    seenSig.add(sig);
+    picked.push(c);
+    if (picked.length >= count) break;
+  }
+  return picked;
+}
+
+console.log("\nSearching handmade compact hard levels (Goal mode)...");
+const handmadeGoal = pickHandmade(7, 30000, 2, 8, 13).map((c, i) => {
+  console.log(`Handmade Goal ${i + 1}: V=${c.vCount}, E=${c.eCount}, optimal=${c.optimal} (ratio=${c.ratio.toFixed(2)})`);
+  return { ...c.lv, name: `Handmade ${i + 1}`, _optimal: c.optimal };
+});
+presetsGoal.push(...handmadeGoal);
 
 const out = {
   goal: presetsGoal,
